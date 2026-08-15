@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<title>Giải cầu lông 3 đội</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#e11d48;--b:#db2777;--c:#111827;--accent:#2563eb;--ok:#15803d;--warn:#b45309}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+.container{max-width:1200px;margin:auto;padding:20px}
+h1{margin:0 0 4px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+button{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:white;font-weight:700;cursor:pointer;touch-action:manipulation}
+button.secondary{background:#475467} button.danger{background:#b42318} button.green{background:var(--ok)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 2px 8px #1018280a}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:800px){.grid3{grid-template-columns:1fr}}
+.team{border:1px solid var(--line);border-radius:12px;padding:12px}.team h3{margin:0 0 8px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
+.team ol{margin:0;padding-left:22px}.team li{padding:2px 0}
+table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--line);padding:9px 7px;text-align:left;vertical-align:middle}th{font-size:13px;color:var(--muted);background:#fafafa}
+#standings,#players{overflow-x:auto}
+#standings table,#players table{min-width:480px}
+.center{text-align:center}.right{text-align:right}.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700}
+.win{font-weight:800;color:var(--ok)} .muted{color:var(--muted)} .champ{font-size:24px;font-weight:900;text-align:center;padding:18px;border-radius:14px;background:#ecfdf3;color:#166534}
+.round-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.round-title h3{margin:0}
+.matches{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:700px){.matches{grid-template-columns:1fr}}@media(max-width:560px){.container{padding:14px}.toolbar>button{flex:1 1 46%}}
+.match{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.match-head{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:8px}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.score{display:flex;gap:5px;align-items:center}.score input{width:58px;padding:8px;border:1px solid #cfd4dc;border-radius:8px;font-size:18px;text-align:center;font-weight:800}
+.save{margin-top:9px;width:100%}.saved{background:#ecfdf3;border-color:#86efac}.saved .save{background:var(--ok)}
+.statbox{display:flex;gap:8px;flex-wrap:wrap}.stat{padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:9px}
+.notice{padding:10px 12px;border-radius:10px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;margin-top:10px}
+input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:100%}
+.small{font-size:12px}.hidden{display:none}
+
+/* ===== Ghi điểm thông minh cho trọng tài ===== */
+.score-icon{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;border-radius:10px;padding:5px 9px;font-size:15px;line-height:1;cursor:pointer;transition:.15s}
+.score-icon:hover{background:#e0e7ff;transform:scale(1.06)}
+.head-right{display:flex;align-items:center;gap:8px}
+.saved-badge{color:var(--ok);font-weight:800}
+.modal-overlay{position:fixed;inset:0;background:#101828b3;display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;backdrop-filter:blur(3px)}
+.modal{width:100%;max-width:400px;background:#fff;border-radius:22px;box-shadow:0 24px 70px #0009;overflow:hidden;animation:pop .18s ease}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:14px 18px}
+.modal-title{font-size:17px;font-weight:800}
+.modal-sub{font-size:12px;opacity:.92;margin-top:2px}
+.modal-close{background:#ffffff33;border:2px solid #ffffff66;color:#fff;border-radius:50%;width:36px;height:36px;font-size:15px;line-height:1;padding:0}
+.modal-hint{padding:9px 12px;text-align:center;font-size:12px;color:var(--muted);background:#f9fafb;border-bottom:1px solid var(--line)}
+.side-panel{padding:22px 14px 18px;text-align:center;color:#fff;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;transition:filter .15s}
+.side-panel .lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;opacity:.95}
+.side-panel .pnames{font-size:14px;font-weight:600;margin:4px 0 8px;opacity:.95}
+.side-panel .bigscore{font-size:64px;font-weight:900;line-height:1;text-shadow:0 3px 12px #0005}
+.bigscore.pulse{animation:scorePulse .2s}
+@keyframes scorePulse{0%{transform:scale(1.3);color:#ffe24d}100%{transform:scale(1)}}
+.side-panel.flash{animation:flash .3s}
+@keyframes flash{0%{filter:brightness(1.5)}100%{filter:brightness(1)}}
+.side-controls{display:flex;justify-content:center;gap:12px;margin-top:12px}
+.side-controls button{width:64px;height:50px;font-size:24px;font-weight:900;border-radius:14px;color:#fff;border:2px solid #ffffff66;background:#ffffff26;padding:0;box-shadow:0 3px 8px #0004}
+.side-controls button:active{transform:scale(.93)}
+.side-controls .plus{background:#ffffff40;border-color:#ffffffd9}
+.modal-foot{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line)}
+.modal-foot button{flex:1;padding:13px;font-size:15px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🏸 Giải cầu lông 3 đội</h1>
+  <div class="sub">18 người · 3 đội · 2 sân · mỗi người đúng 4 trận · 18 trận tổng cộng</div>
+
+  <div class="card">
+    <div class="toolbar">
+      <button onclick="generateSchedule()">🎲 Xếp lại lịch</button>
+      <button class="secondary" onclick="saveData()">💾 Lưu</button>
+      <button class="secondary" onclick="exportData()">📥 Xuất dữ liệu</button>
+      <button class="secondary" onclick="window.print()">🖨️ In</button>
+      <button class="danger" onclick="resetAll()">↺ Reset điểm</button>
+    </div>
+    <div id="generatorStatus" class="small muted"></div>
+  </div>
+
+  <div class="card">
+    <h2>Đội thi đấu</h2>
+    <div class="grid3" id="teams"></div>
+  </div>
+
+  <div class="card">
+    <h2>🏆 Bảng xếp hạng</h2>
+    <div id="standings"></div>
+  </div>
+
+  <div class="card">
+    <h2>📅 Lịch thi đấu</h2>
+    <div class="small muted">Mỗi lượt có 2 trận. Nhập điểm của hai đội rồi bấm Lưu kết quả, hoặc bấm icon <b>🎯</b> ở mỗi trận để ghi điểm nhanh cho trọng tài.</div>
+    <div id="schedule"></div>
+  </div>
+
+  <div class="card">
+    <h2>👤 Thống kê từng người</h2>
+    <div id="players"></div>
+  </div>
+
+  <div class="card">
+    <h2>ℹ️ Luật hệ thống</h2>
+    <ul>
+      <li>Mỗi cặp đội gặp nhau 6 trận: A–B, A–C, B–C.</li>
+      <li>Mỗi người xuất hiện đúng 4 trận.</li>
+      <li>Trong cùng một đội, hệ thống cố gắng không lặp đồng đội.</li>
+      <li><b>Hiếu + Hoa bị khóa, không bao giờ ghép cùng cặp.</b></li>
+      <li>Hệ thống tối ưu để giảm số lần một người phải đánh hai lượt liên tiếp.</li>
+      <li>Đội thắng một trận được 1 điểm thắng. Hiệu số dùng để phá hòa.</li>
+      <li>Dữ liệu điểm được lưu trong trình duyệt (LocalStorage).</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const TEAMS = {
+  A:["Hà","Bộp","Ngọc","Linh","Hương","Huân"],
+  B:["Tân","Đức","Châu","Hiếu","Bình","Hoa"],
+  C:["A Đức","Thái","Tép","Diễn","Lộc","Thảo"]
+};
+const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
+const matchups=["AB","AC","BC"];
+let schedule=[], results={};
+
+function keyPair(team,a,b){return team+"|"+[a,b].sort().join("|")}
+function pairAllowed(team,a,b){
+  return !forbidden.has(keyPair(team,a,b));
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function allPairs(n=6){
+  const p=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)p.push([i,j]);return p;
+}
+const PAIRS=allPairs();
+
+function makeBlock(team){
+  // 3 rounds x 2 pairs. Every player appears exactly twice.
+  for(let attempt=0;attempt<300;attempt++){
+    let count=Array(6).fill(0), used=new Set(), rounds=[];
+    let ok=true;
+    for(let r=0;r<3;r++){
+      let opts=[];
+      for(let x=0;x<PAIRS.length;x++) for(let y=x+1;y<PAIRS.length;y++){
+        let p1=PAIRS[x],p2=PAIRS[y];
+        if(new Set([...p1,...p2]).size!==4) continue;
+        if(used.has(x)||used.has(y)) continue;
+        if(count[p1[0]]>=2||count[p1[1]]>=2||count[p2[0]]>=2||count[p2[1]]>=2) continue;
+        if(!pairAllowed(team,TEAMS[team][p1[0]],TEAMS[team][p1[1]]) ||
+           !pairAllowed(team,TEAMS[team][p2[0]],TEAMS[team][p2[1]])) continue;
+        opts.push([x,y]);
+      }
+      if(!opts.length){ok=false;break}
+      let [x,y]=shuffle(opts)[0];
+      used.add(x);used.add(y);
+      let p1=PAIRS[x],p2=PAIRS[y];
+      rounds.push([p1,p2]);
+      for(const p of [...p1,...p2])count[p]++;
+    }
+    if(ok && count.every(x=>x===2)) return rounds;
+  }
+  return null;
+}
+
+function canonicalPairs(block){
+  return block.flat().map(p=>p.slice().sort((a,b)=>a-b).join("-"));
+}
+function hasRepeatAcrossBlocks(team,b1,b2){
+  const s=new Set(), arr=[...b1.flat(),...b2.flat()];
+  for(const p of arr){
+    const k=p.slice().sort((a,b)=>a-b).join("-");
+    if(s.has(k)) return true;s.add(k);
+  }
+  return false;
+}
+function makeBlocks(){
+  let out={};
+  for(const m of matchups){
+    for(const t of m){
+      let b=null;
+      for(let i=0;i<200;i++){
+        const x=makeBlock(t);
+        if(x){b=x;break}
+      }
+      if(!b)return null;
+      out[t+m]=b;
+    }
+  }
+  // Avoid teammate repeats across the two opponent blocks.
+  for(const t of ["A","B","C"]){
+    const ms=matchups.filter(m=>m.includes(t));
+    if(hasRepeatAcrossBlocks(t,out[t+ms[0]],out[t+ms[1]])) return null;
+  }
+  return out;
+}
+
+function buildCandidate(){
+  const blocks=makeBlocks();
+  if(!blocks)return null;
+  const order=shuffle(matchups);
+  const rounds=[];
+  for(const m of order){
+    let pa=shuffle(blocks[m[0]+m])[0]; // placeholder overwritten below
+    const aRounds=shuffle(blocks[m[0]+m]);
+    const bRounds=shuffle(blocks[m[1]+m]);
+    for(let r=0;r<3;r++){
+      rounds.push({matchup:m,pairs:{
+        [m[0]]:aRounds[r].map(p=>p.slice()),
+        [m[1]]:bRounds[r].map(p=>p.slice())
+      }});
+    }
+  }
+  return rounds;
+}
+function scoreSchedule(sc){
+  const plays={A:Array(9).fill(0).map(()=>new Set()),B:Array(9).fill(0).map(()=>new Set()),C:Array(9).fill(0).map(()=>new Set())};
+  for(let r=0;r<9;r++){
+    for(const t of Object.keys(sc[r].pairs)){
+      for(const p of sc[r].pairs[t]){plays[t][r].add(p[0]);plays[t][r].add(p[1]);}
+    }
+  }
+  let consecutive=0;
+  for(const t of ["A","B","C"])for(let r=0;r<8;r++)
+    for(const p of plays[t][r])if(plays[t][r+1].has(p))consecutive++;
+  return consecutive;
+}
+function validSchedule(sc){
+  const cnt={A:{},B:{},C:{}}, teammate={A:new Set(),B:new Set(),C:new Set()};
+  for(const t of ["A","B","C"])TEAMS[t].forEach((_,i)=>cnt[t][i]=0);
+  for(const rd of sc){
+    for(const t of Object.keys(rd.pairs)){
+      for(const p of rd.pairs[t]){
+        const k=p.slice().sort((a,b)=>a-b).join("-");
+        if(teammate[t].has(k))return false;
+        teammate[t].add(k);cnt[t][p[0]]++;cnt[t][p[1]]++;
+      }
+    }
+  }
+  for(const t of ["A","B","C"])if(!Object.values(cnt[t]).every(x=>x===4))return false;
+  return true;
+}
+function generateSchedule(){
+  const status=document.getElementById("generatorStatus");
+  status.textContent="Đang tìm lịch tối ưu…";
+  let best=null,bestScore=999;
+  for(let i=0;i<12000;i++){
+    const sc=buildCandidate();
+    if(!sc||!validSchedule(sc))continue;
+    const s=scoreSchedule(sc);
+    if(s<bestScore){best=sc;bestScore=s;if(s<=18)break}
+  }
+  if(!best){
+    status.textContent="Không tìm được lịch trong lần này. Bấm Xếp lại lịch.";
+    return;
+  }
+  schedule=best; results={};
+  saveData(false);
+  status.innerHTML=`Đã tạo lịch. Số lượt người đánh liên tiếp: <b>${bestScore}</b>. Có thể bấm Xếp lại để tìm phương án khác.`;
+  renderAll();
+}
+function matchId(r,m){return "r"+r+"s"+m}
+function teamNames(){return {A:"Đội A",B:"Đội B",C:"Đội C"}}
+function renderTeams(){
+  const el=document.getElementById("teams"), names=teamNames();
+  el.innerHTML=["A","B","C"].map(t=>`<div class="team ${t.toLowerCase()}"><h3>🅰️🅱️🅲️ ${names[t]}</h3><ol>${TEAMS[t].map(x=>`<li>${x}</li>`).join("")}</ol></div>`).join("");
+}
+function getStats(){
+  const st={A:{played:0,wins:0,losses:0,for:0,against:0},B:{played:0,wins:0,losses:0,for:0,against:0},C:{played:0,wins:0,losses:0,for:0,against:0}};
+  for(const [id,v] of Object.entries(results)){
+    if(v.a===""||v.b==="")continue;
+    const {r}=matchParts(id), m=schedule[r]; if(!m||!m.matchup)continue;
+    const [a,b]=m.matchup.split("");
+    const sa=Number(v.a),sb=Number(v.b);
+    st[a].played++;st[b].played++;st[a].for+=sa;st[a].against+=sb;st[b].for+=sb;st[b].against+=sa;
+    if(sa>sb)st[a].wins++,st[b].losses++;else if(sb>sa)st[b].wins++,st[a].losses++;
+  }
+  for(const t of ["A","B","C"]){st[t].points=st[t].wins;st[t].diff=st[t].for-st[t].against}
+  return st;
+}
+function renderStandings(){
+  const st=getStats();
+  const arr=["A","B","C"].sort((x,y)=>st[y].points-st[x].points||st[y].diff-st[x].diff||st[y].for-st[x].for);
+  const done=arr.every(t=>st[t].played===12);
+  let html="";
+  if(done)html+=`<div class="champ">🏆 ĐỘI VÔ ĐỊCH: ĐỘI ${arr[0]}</div><br>`;
+  html+=`<table><tr><th>Hạng</th><th>Đội</th><th>Trận</th><th>Thắng</th><th>Thua</th><th>Điểm</th><th>Hiệu số</th></tr>`;
+  arr.forEach((t,i)=>html+=`<tr><td>${i+1}</td><td><b>Đội ${t}</b></td><td>${st[t].played}/12</td><td>${st[t].wins}</td><td>${st[t].losses}</td><td><b>${st[t].points}</b></td><td>${st[t].diff>=0?"+":""}${st[t].diff}</td></tr>`);
+  html+="</table>";document.getElementById("standings").innerHTML=html;
+}
+function renderSchedule(){
+  const el=document.getElementById("schedule");
+  const names=teamNames();
+  let html="";
+  for(let r=0;r<9;r++){
+    const group=schedule.slice(r*1,r*1+1)[0];
+    if(!group)continue;
+    const round=r+1;
+    const pairs=group.pairs;
+    const m=group.matchup, [a,b]=m.split("");
+    const matchPairs=[];
+    for(let court=0;court<2;court++){
+      matchPairs.push({court,a:pairs[a][court],b:pairs[b][court]});
+    }
+    html+=`<div class="card"><div class="round-title"><h3>Lượt ${round} · ${names[a]} vs ${names[b]}</h3><span class="badge">Sân 1 + Sân 2</span></div><div class="matches">`;
+    matchPairs.forEach((x,i)=>{
+      const id=matchId(r,i), v=results[id]||{a:"",b:""};
+      const pa=x.a.map(i=>TEAMS[a][i]).join(" + "), pb=x.b.map(i=>TEAMS[b][i]).join(" + ");
+      const saved=(v.a!==""&&v.b!=="");
+      html+=`<div class="match ${saved?"saved":""}">
+        <div class="match-head"><span>Sân ${x.court+1}</span><span class="head-right">${saved?'<span class="saved-badge">✓ Đã lưu</span>':""}<button class="score-icon" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</button></span></div>
+        <div class="teams"><div class="side">${pa}</div><div class="score"><input type="number" min="0" id="${id}a" value="${v.a}"><b>-</b><input type="number" min="0" id="${id}b" value="${v.b}"></div><div class="side right">${pb}</div></div>
+        <button class="save" onclick="saveMatch('${id}','${a}','${b}')">Lưu kết quả</button>
+      </div>`;
+    });
+    html+="</div></div>";
+  }
+  el.innerHTML=html;
+}
+
+/* ===== Ghi điểm thông minh (modal dành cho trọng tài) ===== */
+function matchParts(id){const m=id.match(/^r(\d+)s(\d+)$/);return m?{r:+m[1],slot:+m[2]}:{r:0,slot:0}}
+let scoreUI=null;
+function openScoreModal(id){
+  if(scoreUI)closeScoreModal();
+  const {r,slot}=matchParts(id);
+  const rd=schedule[r];if(!rd)return;
+  const [a,b]=rd.matchup.split(""), names=teamNames();
+  const colors={A:"#e11d48",B:"#db2777",C:"#374151"};
+  const pa=rd.pairs[a][slot].map(i=>TEAMS[a][i]).join(" + ");
+  const pb=rd.pairs[b][slot].map(i=>TEAMS[b][i]).join(" + ");
+  const cur=results[id]||{};
+  const va=cur.a!==""&&cur.a!=null?Number(cur.a):0;
+  const vb=cur.b!==""&&cur.b!=null?Number(cur.b):0;
+  const cA=colors[a],cB=colors[b];
+  const ov=document.createElement("div");
+  ov.className="modal-overlay";ov.id="scoreOverlay";
+  ov.innerHTML=`
+    <div class="modal">
+      <div class="modal-head" style="background:linear-gradient(135deg,${cA},${cB})">
+        <div><div class="modal-title">🎯 Ghi điểm thông minh</div><div class="modal-sub">Sân ${slot+1} · ${names[a]} vs ${names[b]}</div></div>
+        <button class="modal-close" onclick="closeScoreModal()">✕</button>
+      </div>
+      <div class="modal-hint">👆 Bấm vào ô của đội để +1 điểm · dùng nút − / + để sửa lại</div>
+      <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
+        <div class="lab">${names[a]}</div>
+        <div class="pnames">${pa}</div>
+        <div class="bigscore" id="scoreA">${va}</div>
+        <div class="side-controls">
+          <button class="minus" onclick="event.stopPropagation();scoreAdjust('a',-1)">−</button>
+          <button class="plus" onclick="event.stopPropagation();scoreAdjust('a',1)">+</button>
+        </div>
+      </div>
+      <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
+        <div class="lab">${names[b]}</div>
+        <div class="pnames">${pb}</div>
+        <div class="bigscore" id="scoreB">${vb}</div>
+        <div class="side-controls">
+          <button class="minus" onclick="event.stopPropagation();scoreAdjust('b',-1)">−</button>
+          <button class="plus" onclick="event.stopPropagation();scoreAdjust('b',1)">+</button>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="secondary" onclick="closeScoreModal()">Hủy</button>
+        <button class="green" onclick="commitScoreModal()">🏁 Lưu trận đấu</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  document.body.style.overflow="hidden";
+  scoreUI={id,overlay:ov,a:va,b:vb};
+}
+function scoreTap(side){scoreAdjust(side,1)}
+function scoreAdjust(side,delta){
+  if(!scoreUI)return;
+  let n=scoreUI[side]+delta;if(n<0)n=0;
+  scoreUI[side]=n;
+  const el=document.getElementById("score"+(side==="a"?"A":"B"));
+  if(el){el.textContent=n;el.classList.remove("pulse");void el.offsetWidth;el.classList.add("pulse")}
+  const panel=document.querySelector('[data-side="'+side+'"]');
+  if(panel){panel.classList.remove("flash");void panel.offsetWidth;panel.classList.add("flash")}
+}
+function commitScoreModal(){
+  if(!scoreUI)return;
+  if(scoreUI.a===scoreUI.b){alert("Hai đội đang hòa điểm. Cần một đội dẫn trước rồi mới Lưu trận đấu.");return}
+  results[scoreUI.id]={a:scoreUI.a,b:scoreUI.b};
+  saveData(false);renderAll();closeScoreModal();
+}
+function closeScoreModal(){
+  if(scoreUI&&scoreUI.overlay)scoreUI.overlay.remove();
+  scoreUI=null;document.body.style.overflow="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI)closeScoreModal()});
+
+function saveMatch(id,a,b){
+  const va=document.getElementById(id+"a").value,vb=document.getElementById(id+"b").value;
+  if(va===""||vb===""){alert("Nhập đủ điểm hai đội.");return}
+  if(Number(va)===Number(vb)){alert("Không được hòa. Nếu hết giờ hòa điểm, hãy đánh thêm 1 điểm quyết định rồi nhập kết quả.");return}
+  results[id]={a:Number(va),b:Number(vb)};
+  saveData(false);renderAll();
+}
+function renderPlayers(){
+  const played={A:{},B:{},C:{}};
+  for(const t of ["A","B","C"])TEAMS[t].forEach((_,i)=>played[t][i]=0);
+  schedule.forEach((rd,r)=>Object.keys(rd.pairs).forEach(t=>rd.pairs[t].forEach(p=>p.forEach(i=>played[t][i]++))));
+  let html=`<table><tr><th>Đội</th><th>Người</th><th>Đã đánh</th><th>Còn lại</th></tr>`;
+  ["A","B","C"].forEach(t=>TEAMS[t].forEach((name,i)=>{
+    html+=`<tr><td><b>${t}</b></td><td>${name}</td><td>${played[t][i]}</td><td>${Math.max(0,4-played[t][i])}</td></tr>`;
+  }));
+  html+="</table>";document.getElementById("players").innerHTML=html;
+}
+function renderAll(){renderTeams();renderStandings();renderSchedule();renderPlayers();}
+function saveData(notice=true){
+  localStorage.setItem("badminton3team",JSON.stringify({schedule,results}));
+  if(notice)alert("Đã lưu vào trình duyệt.");
+}
+function loadData(){
+  try{
+    const x=JSON.parse(localStorage.getItem("badminton3team")||"null");
+    if(x&&Array.isArray(x.schedule)&&x.schedule.length===9){schedule=x.schedule;results=x.results||{};return true}
+  }catch(e){}
+  return false;
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify({schedule,results},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="badminton-3-doi.json";a.click();URL.revokeObjectURL(a.href);
+}
+function resetAll(){
+  if(!confirm("Xóa toàn bộ điểm đã nhập? Lịch thi đấu sẽ được giữ nguyên."))return;
+  results={};saveData(false);renderAll();
+}
+(function init(){
+  if(!loadData())generateSchedule();else{document.getElementById("generatorStatus").textContent="Đã khôi phục lịch và điểm từ trình duyệt.";renderAll()}
+})();
+</script>
+</body>
+</html>
