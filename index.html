@@ -147,7 +147,7 @@ const TEAMS = {
 };
 const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
 const matchups=["AB","AC","BC"];
-let schedule=[], results={}, settings={winLimit:25,ver:2};
+let schedule=[], results={}, settings={winLimit:21,ver:2};
 
 /* ===== Lưu dùng chung qua Firebase (JSON trên đám mây) — NHIỀU TRỌNG TÀI ĐỒNG BỘ THỜI GIAN THỰC =====
    Dữ liệu DUY NHẤT lưu trên ĐÁM MÂY (đã bỏ localStorage). */
@@ -358,12 +358,12 @@ function generateSchedule(){
   status.textContent="Đang xếp lại lịch…";
   schedule=shuffledSchedule();
   results={};
-  settings.winLimit=25;
+  settings.winLimit=21;
   settings.ver=2;
   settings.gen=(settings.gen||0)+1;
   settings.genTs=Date.now();
   pushAllToCloud();
-  const wl=document.getElementById("winLimit");if(wl)wl.value=25;
+  const wl=document.getElementById("winLimit");if(wl)wl.value=21;
   status.textContent="Đã xếp lại lịch ("+(schedule.length*2)+" trận, thứ tự mới). Bộ cặp vẫn đúng quy tắc: Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận.";
   renderAll();
 }
@@ -522,7 +522,7 @@ function minusConfirmed(side){closeConfirm();scoreAdjust(side,-1)}
 function closeConfirm(){if(scoreUI&&scoreUI.confirmOv){scoreUI.confirmOv.remove();scoreUI.confirmOv=null}}
 function scoreAdjust(side,delta){
   if(!scoreUI)return;
-  const limit=Number(settings.winLimit)||25;
+  const limit=Number(settings.winLimit)||21;
   let n=scoreUI[side]+delta;if(n>limit)n=limit;if(n<0)n=0;
   scoreUI[side]=n;
   const el=document.getElementById("score"+(side==="a"?"A":"B"));
@@ -537,7 +537,7 @@ function scoreAdjust(side,delta){
 function syncTiso(side,val){
   if(!scoreUI)return;
   let n=parseInt(val,10);if(isNaN(n)||n<0)n=0;
-  const limit=Number(settings.winLimit)||25;
+  const limit=Number(settings.winLimit)||21;
   if(n>limit)n=limit;
   scoreUI[side]=n;
   const el=document.getElementById("score"+(side==="a"?"A":"B"));
@@ -558,7 +558,7 @@ function autoSaveResult(){
 }
 function checkWinLimit(){
   if(!scoreUI||scoreUI.ended)return;
-  const limit=Number(settings.winLimit)||25;
+  const limit=Number(settings.winLimit)||21;
   const winner=scoreUI.a>=limit?"a":(scoreUI.b>=limit?"b":null);
   if(!winner)return;
   scoreUI.ended=true;
@@ -609,7 +609,7 @@ function applyRemoteData(v){
   if(v.results){results=v.results;migrateResults();}
   if(v.settings){
     const s=v.settings;
-    settings.winLimit=(Number(s.winLimit)>=2&&Number(s.winLimit)<=99)?Number(s.winLimit):25;
+    settings.winLimit=(Number(s.winLimit)>=2&&Number(s.winLimit)<=99)?Number(s.winLimit):21;
     settings.ver=2;
     if(typeof s.gen==="number")settings.gen=s.gen;
     if(typeof s.genTs==="number")settings.genTs=s.genTs;
