@@ -29,6 +29,9 @@ table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--li
 .center{text-align:center}.right{text-align:right}.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700}
 .win{font-weight:800;color:var(--ok)} .muted{color:var(--muted)} .champ{font-size:24px;font-weight:900;text-align:center;padding:18px;border-radius:14px;background:#ecfdf3;color:#166534}
 .round-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.round-title h3{margin:0}
+.rnum{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 6px;border-radius:8px;background:var(--accent);color:#fff;font-size:13px;font-weight:800;margin-right:8px;vertical-align:middle}
+.vs{color:var(--muted);font-size:12px;font-weight:600;margin:0 4px;vertical-align:middle}
+.saved-mark{color:var(--ok);font-weight:900;font-size:16px}
 @media(max-width:560px){.container{padding:14px}.toolbar>button{flex:1 1 46%}}
 .teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.result{display:flex;gap:8px;align-items:center;font-size:24px;font-weight:900}.result span{min-width:34px;text-align:center}.result-empty{color:#cbd5e1;font-size:16px;font-weight:700;letter-spacing:2px}
 .save{margin-top:9px;width:100%}.saved{background:#ecfdf3;border-color:#86efac}.saved .save{background:var(--ok)}
@@ -42,8 +45,8 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 .score-icon:hover{background:#e0e7ff;transform:scale(1.06)}
 .head-right{display:flex;align-items:center;gap:8px}
 .saved-badge{color:var(--ok);font-weight:800}
-.modal-overlay{position:fixed;inset:0;background:#101828b3;display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;backdrop-filter:blur(3px)}
-.modal{width:100%;max-width:400px;background:#fff;border-radius:22px;box-shadow:0 24px 70px #0009;overflow:hidden;animation:pop .18s ease;position:relative}
+.modal-overlay{position:fixed;inset:0;background:#101828b3;display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;backdrop-filter:blur(3px);overflow-y:auto}
+.modal{width:100%;max-width:400px;background:#fff;border-radius:22px;box-shadow:0 24px 70px #0009;overflow:hidden;animation:pop .18s ease;position:relative;margin:auto}
 @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
 .modal-head{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:14px 18px}
 .modal-title{font-size:17px;font-weight:800}
@@ -85,6 +88,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 .win-cover .green{background:#fff;color:#065f46;font-size:15px;padding:11px 22px;margin-top:10px}
 .modal-foot{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line)}
 .modal-foot button{flex:1;padding:13px;font-size:15px}
+@media(max-height:700px){.side-panel{padding:16px 12px 10px}.side-panel .bigscore{font-size:46px}.tiso-row{padding:8px 14px}}
 </style>
 </head>
 <body>
@@ -299,7 +303,6 @@ function renderStandings(){
 }
 function renderSchedule(){
   const el=document.getElementById("schedule");
-  const names=teamNames();
   let html="", n=0;
   for(let r=0;r<9;r++){
     const group=schedule[r]; if(!group)continue;
@@ -311,7 +314,7 @@ function renderSchedule(){
       const pb=group.pairs[b][court].map(p=>TEAMS[b][p]).join(" + ");
       const saved=(v.a!==""&&v.b!=="");
       html+=`<div class="card ${saved?"saved":""}">
-        <div class="round-title"><h3>Lượt ${n} · ${names[a]} vs ${names[b]}</h3><span class="head-right">${saved?'<span class="saved-badge">✓ Đã lưu</span>':""}<button class="score-icon" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</button></span></div>
+        <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${saved?'<span class="saved-mark">✓</span>':""}<button class="score-icon" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</button></span></div>
         <div class="teams"><div class="side">${pa}</div><div class="result ${saved?"":"result-empty"}">${saved?`<span style="color:var(--${a.toLowerCase()})">${v.a}</span><b>-</b><span style="color:var(--${b.toLowerCase()})">${v.b}</span>`:"– : –"}</div><div class="side right">${pb}</div></div>
       </div>`;
     }
@@ -365,7 +368,6 @@ function openScoreModal(id){
         <span class="tap-add" aria-hidden="true">＋</span>
       </div>
       <div class="modal-foot">
-        <button class="secondary" onclick="closeScoreModal()">Hủy</button>
         <button class="green" onclick="commitScoreModal()">🏁 Lưu trận đấu</button>
       </div>
     </div>`;
