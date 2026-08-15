@@ -51,7 +51,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 .modal-head{display:flex;justify-content:space-between;align-items:center;color:#fff;padding:14px 18px}
 .modal-title{font-size:17px;font-weight:800}
 .modal-sub{font-size:12px;opacity:.92;margin-top:2px}
-.modal-close{background:#ffffff33;border:2px solid #ffffff66;color:#fff;border-radius:50%;width:36px;height:36px;font-size:15px;line-height:1;padding:0}
+.panels{flex:1 1 auto;display:flex;flex-direction:row;min-height:0}
 .modal-hint{padding:9px 12px;text-align:center;font-size:12px;color:var(--muted);background:#f9fafb;border-bottom:1px solid var(--line)}
 .tiso-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:#f1f5f9;border-bottom:1px solid var(--line)}
 .tiso-team{font-size:12px;font-weight:800}
@@ -353,19 +353,21 @@ function openScoreModal(id){
         <input type="text" id="tisoB" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${vb}">
         <span class="tiso-team" style="color:${cB}">${names[b]}</span>
       </div>
-      <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
-        <button class="minus" title="Trừ 1 điểm (bấm nhầm)" onclick="event.stopPropagation();confirmMinus('a')">−</button>
-        <div class="lab">${names[a]}</div>
-        <div class="pnames">${pa}</div>
-        <div class="bigscore" id="scoreA">${va}</div>
-        <span class="tap-add" aria-hidden="true">＋</span>
-      </div>
-      <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
-        <button class="minus" title="Trừ 1 điểm (bấm nhầm)" onclick="event.stopPropagation();confirmMinus('b')">−</button>
-        <div class="lab">${names[b]}</div>
-        <div class="pnames">${pb}</div>
-        <div class="bigscore" id="scoreB">${vb}</div>
-        <span class="tap-add" aria-hidden="true">＋</span>
+      <div class="panels">
+        <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
+          <button class="minus" title="Trừ 1 điểm (bấm nhầm)" onclick="event.stopPropagation();confirmMinus('a')">−</button>
+          <div class="lab">${names[a]}</div>
+          <div class="pnames">${pa}</div>
+          <div class="bigscore" id="scoreA">${va}</div>
+          <span class="tap-add" aria-hidden="true">＋</span>
+        </div>
+        <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
+          <button class="minus" title="Trừ 1 điểm (bấm nhầm)" onclick="event.stopPropagation();confirmMinus('b')">−</button>
+          <div class="lab">${names[b]}</div>
+          <div class="pnames">${pb}</div>
+          <div class="bigscore" id="scoreB">${vb}</div>
+          <span class="tap-add" aria-hidden="true">＋</span>
+        </div>
       </div>
       <div class="modal-foot">
         <button class="green" onclick="commitScoreModal()">🏁 Lưu trận đấu</button>
