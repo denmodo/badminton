@@ -288,10 +288,26 @@ function buildDeterministicSchedule(){
     R("BC",[2,3],[2,5],[1,2],[1,4])  // Lượt9 : Châu+Hiếu vs Thái+Tép | Châu+Hoa vs Thái+Lộc
   ];
 }
+function shuffledSchedule(){
+  // Giữ nguyên bộ cặp thoả quy tắc (Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp;
+  // mỗi người đúng 4 trận, không trùng cặp đồng đội) nhưng ĐẢO THỨ TỰ các trận
+  // để mỗi lần xếp lại lịch có thứ tự khác nhau (vẫn 100% hợp lệ).
+  const base=buildDeterministicSchedule().map(r=>({...r,pairs:Object.fromEntries(Object.entries(r.pairs).map(([t,p])=>[t,p.map(x=>x.slice())]))}));
+  for(let i=base.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[base[i],base[j]]=[base[j],base[i]];}
+  for(const rd of base){
+    if(Math.random()<0.5){
+      for(const t of Object.keys(rd.pairs)){
+        const p=rd.pairs[t];
+        if(p.length===2)[p[0],p[1]]=[p[1],p[0]];
+      }
+    }
+  }
+  return base;
+}
 function generateSchedule(){
   const status=document.getElementById("generatorStatus");
-  status.textContent="Đang tạo lịch…";
-  schedule=buildDeterministicSchedule();
+  status.textContent="Đang xếp lại lịch…";
+  schedule=shuffledSchedule();
   results={};
   settings.winLimit=25;
   settings.ver=2;
@@ -299,7 +315,7 @@ function generateSchedule(){
   settings.genTs=Date.now();
   pushAllToCloud();
   const wl=document.getElementById("winLimit");if(wl)wl.value=25;
-  status.textContent="Đã tạo lịch mới và RESET toàn bộ điểm lên đám mây (Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp).";
+  status.textContent="Đã xếp lại lịch ("+(schedule.length*2)+" trận, thứ tự mới). Bộ cặp vẫn đúng quy tắc: Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận.";
   renderAll();
 }
 function matchId(r,m){return "r"+r+"s"+m}
