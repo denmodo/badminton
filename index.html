@@ -20,8 +20,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .team{border:1px solid var(--line);border-radius:12px;padding:12px}.team h3{margin:0 0 8px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
 .team ol{margin:0;padding-left:22px}.team li{padding:2px 0}
 table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--line);padding:9px 7px;text-align:left;vertical-align:middle}th{font-size:13px;color:var(--muted);background:#fafafa}
-#standings,#players{overflow-x:auto}
-#standings table,#players table{min-width:480px}
+#standings{overflow-x:auto}
+#standings table{min-width:480px}
 .center{text-align:center}.right{text-align:right}.badge{display:inline-block;padding:3px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:700}
 .win{font-weight:800;color:var(--ok)} .muted{color:var(--muted)} .champ{font-size:24px;font-weight:900;text-align:center;padding:18px;border-radius:14px;background:#ecfdf3;color:#166534}
 .round-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.round-title h3{margin:0}
@@ -56,9 +56,18 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 @keyframes scorePulse{0%{transform:scale(1.3);color:#ffe24d}100%{transform:scale(1)}}
 .side-panel.flash{animation:flash .3s}
 @keyframes flash{0%{filter:brightness(1.5)}100%{filter:brightness(1)}}
-.side-panel .minus{position:absolute;top:10px;right:10px;width:42px;height:42px;font-size:24px;font-weight:900;border-radius:12px;color:#fff;border:2px solid #ffffff52;background:#ffffff2b;padding:0;line-height:1;opacity:.9;z-index:2}
+.side-panel .minus{position:absolute;top:8px;right:8px;width:28px;height:28px;font-size:16px;font-weight:900;border-radius:50%;color:#fff;border:1.5px solid #ffffff59;background:#ffffff33;padding:0;line-height:1;opacity:.85;z-index:2;display:flex;align-items:center;justify-content:center}
 .side-panel .minus:active{transform:scale(.9)}
 .side-panel .tap-add{position:absolute;bottom:6px;right:16px;font-size:46px;font-weight:900;opacity:.15;line-height:1;pointer-events:none;user-select:none}
+.confirm-overlay{position:fixed;inset:0;background:#10182899;display:flex;align-items:center;justify-content:center;z-index:1100;padding:20px;animation:fadeIn .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.confirm-card{background:#fff;border-radius:20px;padding:22px 20px 18px;width:100%;max-width:320px;text-align:center;box-shadow:0 24px 70px #0009;animation:pop .18s ease}
+.confirm-icon{width:58px;height:58px;margin:0 auto 10px;border-radius:50%;background:#fef2f2;color:#b42318;font-size:32px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.confirm-title{font-size:17px;font-weight:800}
+.confirm-msg{font-size:14px;color:var(--text);margin-top:6px}
+.confirm-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.confirm-actions{display:flex;gap:10px;margin-top:16px}
+.confirm-actions button{flex:1;padding:11px;font-size:14px}
 .modal-foot{display:flex;gap:10px;padding:14px;border-top:1px solid var(--line)}
 .modal-foot button{flex:1;padding:13px;font-size:15px}
 </style>
@@ -93,24 +102,6 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
     <h2>📅 Lịch thi đấu</h2>
     <div class="small muted">Mỗi lượt có 2 trận. Nhập điểm của hai đội rồi bấm Lưu kết quả, hoặc bấm icon <b>🎯</b> ở mỗi trận để ghi điểm nhanh cho trọng tài.</div>
     <div id="schedule"></div>
-  </div>
-
-  <div class="card">
-    <h2>👤 Thống kê từng người</h2>
-    <div id="players"></div>
-  </div>
-
-  <div class="card">
-    <h2>ℹ️ Luật hệ thống</h2>
-    <ul>
-      <li>Mỗi cặp đội gặp nhau 6 trận: A–B, A–C, B–C.</li>
-      <li>Mỗi người xuất hiện đúng 4 trận.</li>
-      <li>Trong cùng một đội, hệ thống cố gắng không lặp đồng đội.</li>
-      <li><b>Hiếu + Hoa bị khóa, không bao giờ ghép cùng cặp.</b></li>
-      <li>Hệ thống tối ưu để giảm số lần một người phải đánh hai lượt liên tiếp.</li>
-      <li>Đội thắng một trận được 1 điểm thắng. Hiệu số dùng để phá hòa.</li>
-      <li>Dữ liệu điểm được lưu trong trình duyệt (LocalStorage).</li>
-    </ul>
   </div>
 </div>
 
@@ -362,14 +353,31 @@ function openScoreModal(id){
     </div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  scoreUI={id,overlay:ov,a:va,b:vb,aName:names[a],bName:names[b]};
+  scoreUI={id,overlay:ov,confirmOv:null,a:va,b:vb,aName:names[a],bName:names[b]};
 }
 function scoreTap(side){scoreAdjust(side,1)}
 function confirmMinus(side){
   if(!scoreUI)return;
   const nm=side==="a"?scoreUI.aName:scoreUI.bName;
-  if(confirm("Trừ 1 điểm cho "+nm+"? (chỉ dùng khi bấm nhầm)"))scoreAdjust(side,-1);
+  const ov=document.createElement("div");
+  ov.className="confirm-overlay";
+  ov.onclick=function(e){if(e.target===ov)closeConfirm()};
+  ov.innerHTML=`
+    <div class="confirm-card" role="dialog" aria-modal="true">
+      <div class="confirm-icon">−</div>
+      <div class="confirm-title">Trừ điểm?</div>
+      <div class="confirm-msg">Trừ 1 điểm cho <b>${nm}</b>?</div>
+      <div class="confirm-sub">Chỉ dùng khi bấm nhầm điểm</div>
+      <div class="confirm-actions">
+        <button class="secondary" onclick="closeConfirm()">Hủy</button>
+        <button class="danger" onclick="minusConfirmed('${side}')">Trừ 1 điểm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  scoreUI.confirmOv=ov;
 }
+function minusConfirmed(side){closeConfirm();scoreAdjust(side,-1)}
+function closeConfirm(){if(scoreUI&&scoreUI.confirmOv){scoreUI.confirmOv.remove();scoreUI.confirmOv=null}}
 function scoreAdjust(side,delta){
   if(!scoreUI)return;
   let n=scoreUI[side]+delta;if(n<0)n=0;
@@ -386,10 +394,11 @@ function commitScoreModal(){
   saveData(false);renderAll();closeScoreModal();
 }
 function closeScoreModal(){
+  closeConfirm();
   if(scoreUI&&scoreUI.overlay)scoreUI.overlay.remove();
   scoreUI=null;document.body.style.overflow="";
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI)closeScoreModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI){if(scoreUI.confirmOv)closeConfirm();else closeScoreModal()}});
 
 function saveMatch(id,a,b){
   const va=document.getElementById(id+"a").value,vb=document.getElementById(id+"b").value;
@@ -398,17 +407,7 @@ function saveMatch(id,a,b){
   results[id]={a:Number(va),b:Number(vb)};
   saveData(false);renderAll();
 }
-function renderPlayers(){
-  const played={A:{},B:{},C:{}};
-  for(const t of ["A","B","C"])TEAMS[t].forEach((_,i)=>played[t][i]=0);
-  schedule.forEach((rd,r)=>Object.keys(rd.pairs).forEach(t=>rd.pairs[t].forEach(p=>p.forEach(i=>played[t][i]++))));
-  let html=`<table><tr><th>Đội</th><th>Người</th><th>Đã đánh</th><th>Còn lại</th></tr>`;
-  ["A","B","C"].forEach(t=>TEAMS[t].forEach((name,i)=>{
-    html+=`<tr><td><b>${t}</b></td><td>${name}</td><td>${played[t][i]}</td><td>${Math.max(0,4-played[t][i])}</td></tr>`;
-  }));
-  html+="</table>";document.getElementById("players").innerHTML=html;
-}
-function renderAll(){renderTeams();renderStandings();renderSchedule();renderPlayers();}
+function renderAll(){renderTeams();renderStandings();renderSchedule();}
 function saveData(notice=true){
   localStorage.setItem("badminton3team",JSON.stringify({schedule,results}));
   if(notice)alert("Đã lưu vào trình duyệt.");
