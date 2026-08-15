@@ -84,6 +84,12 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 .confirm-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .confirm-actions{display:flex;gap:10px;margin-top:16px}
 .confirm-actions button{flex:1;padding:11px;font-size:14px}
+.admin-icon{width:58px;height:58px;margin:0 auto 10px;border-radius:50%;background:#eef2ff;color:#3730a3;font-size:27px;display:flex;align-items:center;justify-content:center}
+.admin-pass{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:20px;text-align:center;font-weight:800;letter-spacing:8px;margin-top:14px;outline:none;background:#f8fafc;color:#172033}
+.admin-pass:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px #2563eb22}
+.admin-err{color:#b42318;font-size:13px;font-weight:700;min-height:18px;margin-top:6px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.admin-pass.shake{animation:shake .3s;border-color:#b42318;box-shadow:0 0 0 3px #fecaca}
 .win-setting{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 .win-setting label{font-weight:700}
 .win-setting input{width:64px;padding:7px;border:1px solid #cfd4dc;border-radius:8px;font-size:16px;text-align:center;font-weight:800}
@@ -103,7 +109,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 
   <div class="card">
     <div class="toolbar">
-      <button onclick="generateSchedule()">🎲 Xếp lại lịch</button>
+      <button onclick="requestRegenerate()">🎲 Xếp lại lịch</button>
       <button class="secondary" onclick="saveData()">💾 Lưu</button>
       <button class="secondary hidden" onclick="exportData()">📥 Xuất dữ liệu</button>
       <button class="secondary hidden" onclick="window.print()">🖨️ In</button>
@@ -288,6 +294,49 @@ function buildDeterministicSchedule(){
     R("BC",[2,3],[2,5],[1,2],[1,4])  // Lượt9 : Châu+Hiếu vs Thái+Tép | Châu+Hoa vs Thái+Lộc
   ];
 }
+/* ===== Xếp lại lịch cần mật khẩu Admin (2277) ===== */
+const ADMIN_PASS="7722".split("").reverse().join("");
+function requestRegenerate(){
+  closeAdmin();
+  const ov=document.createElement("div");
+  ov.className="confirm-overlay";
+  ov.id="adminOverlay";
+  ov.onclick=function(e){if(e.target===ov)closeAdmin()};
+  ov.innerHTML=`
+    <div class="confirm-card" role="dialog" aria-modal="true">
+      <div class="admin-icon">🔒</div>
+      <div class="confirm-title">Xếp lại lịch</div>
+      <div class="confirm-msg">Chức năng này cần quyền <b>Admin</b>.</div>
+      <div class="confirm-sub">Nhập mật khẩu quản trị viên để xếp lại lịch</div>
+      <input type="password" id="adminPass" class="admin-pass" placeholder="••••" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div id="adminErr" class="admin-err"></div>
+      <div class="confirm-actions">
+        <button type="button" class="secondary" onclick="closeAdmin()">Hủy</button>
+        <button type="button" class="danger" onclick="submitAdmin()">Xác nhận</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  const inp=ov.querySelector("#adminPass");
+  if(inp){
+    inp.addEventListener("keydown",function(e){if(e.key==="Enter")submitAdmin()});
+    setTimeout(()=>{inp.focus();try{inp.select()}catch(_){}},60);
+  }
+}
+function closeAdmin(){const el=document.getElementById("adminOverlay");if(el)el.remove();}
+function submitAdmin(){
+  const inp=document.getElementById("adminPass"), err=document.getElementById("adminErr");
+  if(!inp)return;
+  if(inp.value.replace(/\D/g,"")===ADMIN_PASS){
+    closeAdmin();
+    generateSchedule();
+  }else{
+    if(err)err.textContent="❌ Sai mật khẩu! Vui lòng thử lại.";
+    inp.value="";inp.focus();
+    inp.classList.add("shake");setTimeout(()=>inp.classList.remove("shake"),350);
+  }
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAdmin()});
+
 function shuffledSchedule(){
   // Giữ nguyên bộ cặp thoả quy tắc (Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp;
   // mỗi người đúng 4 trận, không trùng cặp đồng đội) nhưng ĐẢO THỨ TỰ các trận
