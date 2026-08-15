@@ -266,11 +266,10 @@ function validSchedule(sc){
   for(const t of ["A","B","C"])TEAMS[t].forEach((_,i)=>cnt[t][i]=0);
   for(const rd of sc){
     for(const t of Object.keys(rd.pairs)){
-      for(const p of rd.pairs[t]){
-        const k=p.slice().sort((a,b)=>a-b).join("-");
-        if(teammate[t].has(k))return false;
-        teammate[t].add(k);cnt[t][p[0]]++;cnt[t][p[1]]++;
-      }
+      const p=rd.pairs[t].slice().sort((a,b)=>a-b);
+      const k=p.join("-");
+      if(teammate[t].has(k))return false;
+      teammate[t].add(k);cnt[t][p[0]]++;cnt[t][p[1]]++;
     }
   }
   for(const t of ["A","B","C"])if(!Object.values(cnt[t]).every(x=>x===4))return false;
@@ -281,18 +280,25 @@ function buildDeterministicSchedule(){
   //        B: 0 Tân,1 Đức,2 Châu,3 Hiếu,4 Bình,5 Hoa
   //        C: 0 A Đức,1 Thái,2 Tép,3 Diễn,4 Lộc,5 Thảo
   // Quy tắc: Hà–Tân–A Đức luôn đối đầu nhau; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; không trùng cặp đồng đội.
-  function R(m,a0,a1,b0,b1){const [x,y]=m.split("");return {matchup:m,pairs:{[x]:[a0,a1],[y]:[b0,b1]}};}
-  return [
-    R("AB",[0,1],[3,4],[0,2],[4,3]), // Lượt1 : Hà+Bộp vs Tân+Châu  | Linh+Hương vs Bình+Hiếu
-    R("AB",[0,2],[1,2],[0,3],[1,5]), // Lượt2 : Hà+Ngọc vs Tân+Hiếu | Bộp+Ngọc vs Đức+Hoa
-    R("AB",[1,5],[2,3],[1,2],[4,5]), // Lượt3 : Bộp+Huân vs Đức+Châu | Ngọc+Linh vs Bình+Hoa
-    R("AC",[0,3],[0,4],[0,1],[0,2]), // Lượt4 : Hà+Linh vs A Đức+Thái | Hà+Hương vs A Đức+Tép
-    R("AC",[4,5],[2,5],[2,3],[3,4]), // Lượt5 : Hương+Huân vs Tép+Diễn | Ngọc+Huân vs Diễn+Lộc
-    R("AC",[3,5],[1,4],[1,5],[2,5]), // Lượt6 : Linh+Huân vs Thái+Thảo | Bộp+Hương vs Tép+Thảo
-    R("BC",[0,4],[0,5],[0,4],[0,3]), // Lượt7 : Tân+Bình vs A Đức+Lộc | Tân+Hoa vs A Đức+Diễn
-    R("BC",[1,3],[1,4],[4,5],[3,5]), // Lượt8 : Đức+Hiếu vs Lộc+Thảo | Đức+Bình vs Diễn+Thảo
-    R("BC",[2,3],[2,5],[1,2],[1,4])  // Lượt9 : Châu+Hiếu vs Thái+Tép | Châu+Hoa vs Thái+Lộc
+  // RAW: mỗi dòng = [matchup, A-pair sân1, A-pair sân2, B-pair sân1, B-pair sân2] → 2 TRẬN cùng matchup
+  const RAW=[
+    ["AB",[0,1],[3,4],[0,2],[4,3]], // Hà+Bộp vs Tân+Châu | Linh+Hương vs Bình+Hiếu
+    ["AB",[0,2],[1,2],[0,3],[1,5]], // Hà+Ngọc vs Tân+Hiếu | Bộp+Ngọc vs Đức+Hoa
+    ["AB",[1,5],[2,3],[1,2],[4,5]], // Bộp+Huân vs Đức+Châu | Ngọc+Linh vs Bình+Hoa
+    ["AC",[0,3],[0,4],[0,1],[0,2]], // Hà+Linh vs A Đức+Thái | Hà+Hương vs A Đức+Tép
+    ["AC",[4,5],[2,5],[2,3],[3,4]], // Hương+Huân vs Tép+Diễn | Ngọc+Huân vs Diễn+Lộc
+    ["AC",[3,5],[1,4],[1,5],[2,5]], // Linh+Huân vs Thái+Thảo | Bộp+Hương vs Tép+Thảo
+    ["BC",[0,4],[0,5],[0,4],[0,3]], // Tân+Bình vs A Đức+Lộc | Tân+Hoa vs A Đức+Diễn
+    ["BC",[1,3],[1,4],[4,5],[3,5]], // Đức+Hiếu vs Lộc+Thảo | Đức+Bình vs Diễn+Thảo
+    ["BC",[2,3],[2,5],[1,2],[1,4]]  // Châu+Hiếu vs Thái+Tép | Châu+Hoa vs Thái+Lộc
   ];
+  const out=[];
+  for(const [m,a1,a2,b1,b2] of RAW){
+    const [x,y]=m.split("");
+    out.push({matchup:m,pairs:{[x]:a1.slice(),[y]:b1.slice()}});
+    out.push({matchup:m,pairs:{[x]:a2.slice(),[y]:b2.slice()}});
+  }
+  return out;
 }
 /* ===== Xếp lại lịch cần mật khẩu Admin (2277) ===== */
 const ADMIN_PASS="7722".split("").reverse().join("");
@@ -338,20 +344,35 @@ function submitAdmin(){
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAdmin()});
 
 function shuffledSchedule(){
-  // Giữ nguyên bộ cặp thoả quy tắc (Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp;
-  // mỗi người đúng 4 trận, không trùng cặp đồng đội) nhưng ĐẢO THỨ TỰ các trận
-  // để mỗi lần xếp lại lịch có thứ tự khác nhau (vẫn 100% hợp lệ).
-  const base=buildDeterministicSchedule().map(r=>({...r,pairs:Object.fromEntries(Object.entries(r.pairs).map(([t,p])=>[t,p.map(x=>x.slice())]))}));
-  for(let i=base.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[base[i],base[j]]=[base[j],base[i]];}
-  for(const rd of base){
-    if(Math.random()<0.5){
-      for(const t of Object.keys(rd.pairs)){
-        const p=rd.pairs[t];
-        if(p.length===2)[p[0],p[1]]=[p[1],p[0]];
-      }
+  // Giữ nguyên bộ cặp thoả mọi quy tắc (Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp;
+  // mỗi người đúng 4 trận, không trùng cặp đồng đội) nhưng sắp lại THỨ TỰ 18 trận sao cho
+  // KHÔNG ai đánh 2 trận liên tiếp (kể cả 2 sân chạy song song ⇒ hai trận kề nhau không trùng người).
+  const base=buildDeterministicSchedule().map(m=>({matchup:m.matchup,pairs:Object.fromEntries(Object.entries(m.pairs).map(([t,p])=>[t,p.slice()]))}));
+  const withSet=base.map(m=>{
+    const [x,y]=m.matchup.split(""), set=new Set();
+    for(const p of m.pairs[x])set.add(x+":"+p);
+    for(const p of m.pairs[y])set.add(y+":"+p);
+    return {matchup:m.matchup,pairs:m.pairs,set};
+  });
+  const N=withSet.length, ids=withSet.map((_,i)=>i);
+  function score(arr){let s=0;for(let i=1;i<N;i++){const prev=withSet[arr[i-1]].set;for(const pl of withSet[arr[i]].set)if(prev.has(pl))s++;}return s;}
+  let best=null,bestScore=Infinity;
+  for(let restart=0;restart<30;restart++){
+    let arr=ids.slice();
+    for(let i=N-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+    let cur=score(arr);
+    if(cur<bestScore){bestScore=cur;best=arr.slice();}
+    for(let it=0;it<4000;it++){
+      const i=Math.floor(Math.random()*N), j=Math.floor(Math.random()*N);if(i===j)continue;
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+      const ns=score(arr);
+      if(ns<=cur){cur=ns;}else if(Math.random()<0.05){cur=ns;}else{[arr[i],arr[j]]=[arr[j],arr[i]];}
+      if(cur<bestScore){bestScore=cur;best=arr.slice();}
+      if(cur===0)break;
     }
+    if(bestScore===0)break;
   }
-  return base;
+  return best.map(i=>({matchup:withSet[i].matchup,pairs:withSet[i].pairs}));
 }
 function generateSchedule(){
   const status=document.getElementById("generatorStatus");
@@ -364,10 +385,10 @@ function generateSchedule(){
   settings.genTs=Date.now();
   pushAllToCloud();
   const wl=document.getElementById("winLimit");if(wl)wl.value=21;
-  status.textContent="Đã xếp lại lịch ("+(schedule.length*2)+" trận, thứ tự mới). Bộ cặp vẫn đúng quy tắc: Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận.";
+  status.textContent="Đã xếp lại lịch công bằng ("+schedule.length+" trận): không ai phải đánh 2 trận liên tiếp, kể cả khi 2 sân chạy song song. Vẫn đúng quy tắc Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp; mỗi người đúng 4 trận.";
   renderAll();
 }
-function matchId(r,m){return "r"+r+"s"+m}
+function matchId(i){return "m"+i}
 function teamNames(){return {A:"Đội A",B:"Đội B",C:"Đội C"}}
 function renderTeams(){
   const el=document.getElementById("teams"), names=teamNames();
@@ -378,7 +399,7 @@ function getStats(){
   for(const [id,v] of Object.entries(results)){
     if(v.done!==true)continue;
     if(v.a===""||v.b==="")continue;
-    const {r}=matchParts(id), m=schedule[r]; if(!m||!m.matchup)continue;
+    const m=schedule[matchParts(id)]; if(!m||!m.matchup)continue;
     const [a,b]=m.matchup.split("");
     const sa=Number(v.a),sb=Number(v.b);
     st[a].played++;st[b].played++;st[a].for+=sa;st[a].against+=sb;st[b].for+=sb;st[b].against+=sa;
@@ -399,55 +420,51 @@ function renderStandings(){
 }
 function renderSchedule(){
   const el=document.getElementById("schedule");
-  let html="", n=0;
-  for(let r=0;r<9;r++){
-    const group=schedule[r]; if(!group)continue;
-    const m=group.matchup, [a,b]=m.split("");
-    for(let court=0;court<2;court++){
-      n++;
-      const id=matchId(r,court), v=results[id]||{a:"",b:""};
-      const pa=group.pairs[a][court].map(p=>TEAMS[a][p]).join(" + ");
-      const pb=group.pairs[b][court].map(p=>TEAMS[b][p]).join(" + ");
-      const hasScore=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
-      const done=hasScore&&v.done===true;
-      let cardStyle="", mark="", resCls="result result-empty", resTxt="- : -";
-      if(hasScore){
-        const sa=Number(v.a),sb=Number(v.b);
-        const win=sa>sb?"a":(sb>sa?"b":null);
-        if(done&&win){
-          const w=win==="a"?a:b;
-          cardStyle=`style="background:var(--winbg-${w.toLowerCase()});border-color:var(--winbord-${w.toLowerCase()})"`;
-          mark='<span class="saved-mark">✓</span>';
-          resCls="result";
-          const sA=win==="a"?'font-weight:900':'font-weight:400;color:#94a3b8';
-          const sB=win==="b"?'font-weight:900':'font-weight:400;color:#94a3b8';
-          resTxt=`<span style="${sA}">${v.a}</span><b class="res-dash">-</b><span style="${sB}">${v.b}</span>`;
-        }else{
-          mark=hasScore?'<span class="saved-mark live">●</span>':"";
-          resCls="result";
-          resTxt=`<span style="font-weight:400">${v.a}</span><b class="res-dash">-</b><span style="font-weight:400">${v.b}</span>`;
-        }
+  let html="";
+  schedule.forEach((m,i)=>{
+    const [a,b]=m.matchup.split(""), id="m"+i, n=i+1;
+    const v=results[id]||{a:"",b:""};
+    const pa=m.pairs[a].map(p=>TEAMS[a][p]).join(" + ");
+    const pb=m.pairs[b].map(p=>TEAMS[b][p]).join(" + ");
+    const hasScore=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
+    const done=hasScore&&v.done===true;
+    let cardStyle="", mark="", resCls="result result-empty", resTxt="- : -";
+    if(hasScore){
+      const sa=Number(v.a),sb=Number(v.b);
+      const win=sa>sb?"a":(sb>sa?"b":null);
+      if(done&&win){
+        const w=win==="a"?a:b;
+        cardStyle=`style="background:var(--winbg-${w.toLowerCase()});border-color:var(--winbord-${w.toLowerCase()})"`;
+        mark='<span class="saved-mark">✓</span>';
+        resCls="result";
+        const sA=win==="a"?'font-weight:900':'font-weight:400;color:#94a3b8';
+        const sB=win==="b"?'font-weight:900':'font-weight:400;color:#94a3b8';
+        resTxt=`<span style="${sA}">${v.a}</span><b class="res-dash">-</b><span style="${sB}">${v.b}</span>`;
+      }else{
+        mark=hasScore?'<span class="saved-mark live">●</span>':"";
+        resCls="result";
+        resTxt=`<span style="font-weight:400">${v.a}</span><b class="res-dash">-</b><span style="font-weight:400">${v.b}</span>`;
       }
-      html+=`<div class="card" ${cardStyle}>
-        <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
-        <div class="teams"><div class="side">${pa}</div><div class="${resCls}">${resTxt}</div><div class="side right">${pb}</div></div>
-      </div>`;
     }
-  }
+    html+=`<div class="card" ${cardStyle}>
+      <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
+      <div class="teams"><div class="side">${pa}</div><div class="${resCls}">${resTxt}</div><div class="side right">${pb}</div></div>
+    </div>`;
+  });
   el.innerHTML=html;
 }
 
 /* ===== Ghi điểm thông minh (modal dành cho trọng tài) ===== */
-function matchParts(id){const m=id.match(/^r(\d+)s(\d+)$/);return m?{r:+m[1],slot:+m[2]}:{r:0,slot:0}}
+function matchParts(id){const m=id.match(/^m(\d+)$/);return m?+m[1]:0}
 let scoreUI=null, lastTap={a:0,b:0};
 function openScoreModal(id){
   if(scoreUI)closeScoreModal();
-  const {r,slot}=matchParts(id);
-  const rd=schedule[r];if(!rd)return;
+  const i=matchParts(id);
+  const rd=schedule[i];if(!rd)return;
   const [a,b]=rd.matchup.split(""), names=teamNames();
   const colors={A:"#dc2626",B:"#2563eb",C:"#ea580c"};
-  const pa=rd.pairs[a][slot].map(i=>TEAMS[a][i]).join(" + ");
-  const pb=rd.pairs[b][slot].map(i=>TEAMS[b][i]).join(" + ");
+  const pa=rd.pairs[a].map(x=>TEAMS[a][x]).join(" + ");
+  const pb=rd.pairs[b].map(x=>TEAMS[b][x]).join(" + ");
   const cur=results[id]||{};
   const va=cur.a!==""&&cur.a!=null?Number(cur.a):0;
   const vb=cur.b!==""&&cur.b!=null?Number(cur.b):0;
@@ -605,7 +622,7 @@ function resetAll(){
 }
 function applyRemoteData(v){
   if(!v)return;
-  if(Array.isArray(v.schedule)&&v.schedule.length===9)schedule=v.schedule;
+  if(Array.isArray(v.schedule)&&v.schedule.length===18)schedule=v.schedule;
   if(v.results){results=v.results;migrateResults();}
   if(v.settings){
     const s=v.settings;
@@ -647,7 +664,7 @@ function setupWinLimitInput(){
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
       const d=snap.val();
-      if(d&&Array.isArray(d.schedule)&&d.schedule.length===9){
+      if(d&&Array.isArray(d.schedule)&&d.schedule.length===18){
         applyRemoteData(d);
         document.getElementById("generatorStatus").textContent="Đã tải dữ liệu từ đám mây.";
       }else{
