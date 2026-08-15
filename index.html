@@ -370,7 +370,9 @@ function renderSchedule(){
           cardStyle=`style="background:var(--winbg-${w.toLowerCase()});border-color:var(--winbord-${w.toLowerCase()})"`;
           mark='<span class="saved-mark">✓</span>';
           resCls="result";
-          resTxt=`<span style="font-weight:900">${win==="a"?v.a:v.b}</span><b class="res-dash">-</b><span style="font-weight:400;color:#94a3b8">${win==="a"?v.b:v.a}</span>`;
+          const sA=win==="a"?'font-weight:900':'font-weight:400;color:#94a3b8';
+          const sB=win==="b"?'font-weight:900':'font-weight:400;color:#94a3b8';
+          resTxt=`<span style="${sA}">${v.a}</span><b class="res-dash">-</b><span style="${sB}">${v.b}</span>`;
         }else{
           mark=hasScore?'<span class="saved-mark live">●</span>':"";
           resCls="result";
