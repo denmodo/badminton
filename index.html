@@ -8,8 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#dc2626;--b:#2563eb;--c:#ea580c;--accent:#2563eb;--ok:#15803d;--warn:#b45309}
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#dc2626;--b:#2563eb;--c:#ea580c;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--winbg-a:#fee2e2;--winbord-a:#fecaca;--winbg-b:#dbeafe;--winbord-b:#bfdbfe;--winbg-c:#ffedd5;--winbord-c:#fed7aa}
 *{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Vietnamese","Noto Sans",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .container{max-width:1200px;margin:auto;padding:20px}
 h1{margin:0 0 4px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
@@ -37,7 +39,7 @@ table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--li
 .saved-mark{color:var(--ok);font-weight:900;font-size:16px}
 .saved-mark.live{color:#94a3b8;font-size:12px}
 @media(max-width:560px){.container{padding:14px}.toolbar>button{flex:1 1 46%}}
-.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.result{display:flex;gap:8px;align-items:center;font-size:24px;font-weight:900}.result span{min-width:34px;text-align:center}.result-empty{color:#cbd5e1;font-size:16px;font-weight:700;letter-spacing:2px}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.result{display:flex;gap:8px;align-items:center;font-size:24px;font-weight:900}.result span{min-width:34px;text-align:center}.result-empty{color:#cbd5e1;font-size:16px;font-weight:700;letter-spacing:2px}.res-dash{color:var(--muted);font-weight:600}
 .save{margin-top:9px;width:100%}.saved{background:#ecfdf3;border-color:#86efac}.saved .save{background:var(--ok)}
 .statbox{display:flex;gap:8px;flex-wrap:wrap}.stat{padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:9px}
 .notice{padding:10px 12px;border-radius:10px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;margin-top:10px}
@@ -59,12 +61,12 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 @media (orientation:landscape) and (max-width:1000px){.modal{max-width:none}}
 .modal-hint{padding:9px 12px;text-align:center;font-size:12px;color:var(--muted);background:#f9fafb;border-bottom:1px solid var(--line)}
 .tiso-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:#f1f5f9;border-bottom:1px solid var(--line)}
-.tiso-team{font-size:12px;font-weight:800}
+.tiso-team{font-size:14px;font-weight:800}
 .tiso-row input{width:56px;padding:8px;border:1px solid #cfd4dc;border-radius:10px;font-size:20px;font-weight:900;text-align:center}
 .tiso-row b{font-size:18px;color:var(--muted)}
 .side-panel{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 14px;text-align:center;color:#fff;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;position:relative;overflow:hidden;transition:filter .15s}
-.side-panel .lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;opacity:.95}
-.side-panel .pnames{font-size:14px;font-weight:600;margin:4px 0 8px;opacity:.95}
+.side-panel .lab{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;opacity:.5}
+.side-panel .pnames{font-size:18px;font-weight:600;margin:4px 0 8px;opacity:.95}
 .side-panel .bigscore{font-size:64px;font-weight:900;line-height:1;text-shadow:0 3px 12px #0005}
 .bigscore.pulse{animation:scorePulse .2s}
 @keyframes scorePulse{0%{transform:scale(1.3);color:#ffe24d}100%{transform:scale(1)}}
@@ -140,6 +142,22 @@ const TEAMS = {
 const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
 const matchups=["AB","AC","BC"];
 let schedule=[], results={}, settings={winLimit:25,ver:2};
+
+/* ===== Lưu dùng chung qua Firebase (JSON trên đám mây) — nhiều trọng tài đồng bộ thời gian thực =====
+   ⬇️ ĐIỀN THÔNG TIN FIREBASE CỦA BẠN Ở ĐÂY (xem hướng dẫn cuối file). Để trống = dùng localStorage dự phòng. */
+const FIREBASE_CONFIG={apiKey:"AIzaSyAq9N2fkROcpKFcobgd2PFLvckljSkKaNY",databaseURL:"https://youcanseefuture.firebaseio.com",projectId:"youcanseefuture",authDomain:"youcanseefuture.firebaseapp.com",storageBucket:"youcanseefuture.firebasestorage.app",messagingSenderId:"456240353181",appId:"1:456240353181:web:c1e9fd6ccb3e4145302974"};
+let remoteDB=null;
+try{
+  if(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.databaseURL){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    remoteDB=firebase.database();
+  }
+}catch(e){remoteDB=null}
+const RDB="badminton";
+function persistCache(){localStorage.setItem("badminton3team",JSON.stringify({schedule,results,settings}));}
+function migrateResults(){for(const k in results){const r=results[k];if(r&&r.done===undefined&&r.a!==""&&r.b!=="")r.done=true;}}
+function writeMatchResult(id,val){if(remoteDB)remoteDB.ref(RDB+"/results/"+id).set(val).catch(()=>{});}
+function clearRemoteResults(){if(remoteDB)remoteDB.ref(RDB+"/results").remove().catch(()=>{});}
 
 function keyPair(team,a,b){return team+"|"+[a,b].sort().join("|")}
 function pairAllowed(team,a,b){
@@ -271,7 +289,7 @@ function generateSchedule(){
     return;
   }
   schedule=best; results={};
-  saveData(false);
+  clearRemoteResults();saveData(false);
   status.innerHTML=`Đã tạo lịch. Số lượt người đánh liên tiếp: <b>${bestScore}</b>. Có thể bấm Xếp lại để tìm phương án khác.`;
   renderAll();
 }
@@ -302,7 +320,7 @@ function renderStandings(){
   let html="";
   if(done)html+=`<div class="champ">🏆 ĐỘI VÔ ĐỊCH: ĐỘI ${arr[0]}</div><br>`;
   html+=`<table><tr><th>Hạng</th><th>Đội</th><th>Trận</th><th>Thắng</th><th>Thua</th><th>Điểm</th><th>Hiệu số</th></tr>`;
-  arr.forEach((t,i)=>html+=`<tr><td>${i+1}</td><td><b>Đội ${t}</b></td><td>${st[t].played}/12</td><td>${st[t].wins}</td><td>${st[t].losses}</td><td><b>${st[t].points}</b></td><td>${st[t].diff>=0?"+":""}${st[t].diff}</td></tr>`);
+  arr.forEach((t,i)=>html+=`<tr><td>${i+1}</td><td><b style="color:var(--${t.toLowerCase()});font-size:16px">${t}</b></td><td>${st[t].played}/12</td><td>${st[t].wins}</td><td>${st[t].losses}</td><td><b>${st[t].points}</b></td><td>${st[t].diff>=0?"+":""}${st[t].diff}</td></tr>`);
   html+="</table>";document.getElementById("standings").innerHTML=html;
 }
 function renderSchedule(){
@@ -318,9 +336,25 @@ function renderSchedule(){
       const pb=group.pairs[b][court].map(p=>TEAMS[b][p]).join(" + ");
       const hasScore=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
       const done=hasScore&&v.done===true;
-      html+=`<div class="card ${done?"saved":""}">
-        <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${done?'<span class="saved-mark">✓</span>':(hasScore?'<span class="saved-mark live">●</span>':"")}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
-        <div class="teams"><div class="side">${pa}</div><div class="result ${hasScore?"":"result-empty"}">${hasScore?`<span style="color:var(--${a.toLowerCase()})">${v.a}</span><b>-</b><span style="color:var(--${b.toLowerCase()})">${v.b}</span>`:"- : -"}</div><div class="side right">${pb}</div></div>
+      let cardStyle="", mark="", resCls="result result-empty", resTxt="- : -";
+      if(hasScore){
+        const sa=Number(v.a),sb=Number(v.b);
+        const win=sa>sb?"a":(sb>sa?"b":null);
+        if(done&&win){
+          const w=win==="a"?a:b;
+          cardStyle=`style="background:var(--winbg-${w.toLowerCase()});border-color:var(--winbord-${w.toLowerCase()})"`;
+          mark='<span class="saved-mark">✓</span>';
+          resCls="result";
+          resTxt=`<span style="font-weight:900">${win==="a"?v.a:v.b}</span><b class="res-dash">-</b><span style="font-weight:400;color:#94a3b8">${win==="a"?v.b:v.a}</span>`;
+        }else{
+          mark=hasScore?'<span class="saved-mark live">●</span>':"";
+          resCls="result";
+          resTxt=`<span style="font-weight:400">${v.a}</span><b class="res-dash">-</b><span style="font-weight:400">${v.b}</span>`;
+        }
+      }
+      html+=`<div class="card" ${cardStyle}>
+        <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
+        <div class="teams"><div class="side">${pa}</div><div class="${resCls}">${resTxt}</div><div class="side right">${pb}</div></div>
       </div>`;
     }
   }
@@ -442,7 +476,7 @@ function autoSaveResult(){
   const prev=results[scoreUI.id];
   const wasDone=!!(prev&&prev.done===true);
   results[scoreUI.id]={a:scoreUI.a,b:scoreUI.b,done:wasDone};
-  saveData(false);renderSchedule();
+  persistCache();writeMatchResult(scoreUI.id,results[scoreUI.id]);renderSchedule();
 }
 function checkWinLimit(){
   if(!scoreUI||scoreUI.ended)return;
@@ -451,7 +485,7 @@ function checkWinLimit(){
   if(!winner)return;
   scoreUI.ended=true;
   results[scoreUI.id]={a:scoreUI.a,b:scoreUI.b,done:true};
-  saveData(false);renderAll();
+  persistCache();writeMatchResult(scoreUI.id,results[scoreUI.id]);renderAll();
   showWinBanner(winner);
 }
 function showWinBanner(winner){
@@ -478,15 +512,19 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI){if(scoreUI
 
 function renderAll(){renderTeams();renderStandings();renderSchedule();}
 function saveData(notice=true){
-  localStorage.setItem("badminton3team",JSON.stringify({schedule,results,settings}));
-  if(notice)alert("Đã lưu vào trình duyệt.");
+  persistCache();
+  if(remoteDB){
+    remoteDB.ref(RDB+"/schedule").set(schedule).catch(()=>{});
+    remoteDB.ref(RDB+"/settings").set(settings).catch(()=>{});
+  }
+  if(notice)alert("Đã lưu.");
 }
 function loadData(){
   try{
     const x=JSON.parse(localStorage.getItem("badminton3team")||"null");
     if(x&&Array.isArray(x.schedule)&&x.schedule.length===9){
       schedule=x.schedule;results=x.results||{};
-      for(const k in results){const r=results[k];if(r&&r.done===undefined&&r.a!==""&&r.b!=="")r.done=true;}
+      migrateResults();
       if(x.settings){
         if((x.settings.ver||1)<2){settings.winLimit=25;settings.ver=2;saveData(false)}
         else settings.winLimit=Number(x.settings.winLimit)||25;
@@ -502,22 +540,51 @@ function exportData(){
 }
 function resetAll(){
   if(!confirm("Xóa toàn bộ điểm đã nhập? Lịch thi đấu sẽ được giữ nguyên."))return;
-  results={};saveData(false);renderAll();
+  results={};clearRemoteResults();saveData(false);renderAll();
 }
-(function init(){
-  if(!loadData())generateSchedule();else{document.getElementById("generatorStatus").textContent="Đã khôi phục lịch và điểm từ trình duyệt.";renderAll()}
+function applyRemoteData(v){
+  if(!v)return;
+  if(Array.isArray(v.schedule)&&v.schedule.length===9)schedule=v.schedule;
+  if(v.results){results=v.results;migrateResults();}
+  if(v.settings)Object.assign(settings,v.settings);
+  const wl=document.getElementById("winLimit");if(wl)wl.value=settings.winLimit;
+  renderAll();
+}
+function seedRemote(){
+  if(!remoteDB)return;
+  remoteDB.ref(RDB).set({schedule:schedule,results:results,settings:settings}).catch(()=>{});
+}
+function setupWinLimitInput(){
   const wl=document.getElementById("winLimit");
   if(wl){
     wl.value=settings.winLimit;
-    wl.addEventListener("input",function(){
-      const c=this.value.replace(/\D/g,'');
-      if(this.value!==c)this.value=c;
-    });
+    wl.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;});
     wl.addEventListener("change",function(){
       const v=parseInt(this.value.replace(/\D/g,''),10);
       if(v>=2&&v<=99){settings.winLimit=v;saveData(false)}
       else this.value=settings.winLimit;
     });
+  }
+}
+(function init(){
+  setupWinLimitInput();
+  if(remoteDB){
+    remoteDB.ref(RDB).get().then(snap=>{
+      const d=snap.val();
+      if(d&&Array.isArray(d.schedule)&&d.schedule.length===9){
+        applyRemoteData(d);
+        document.getElementById("generatorStatus").textContent="Đã tải dữ liệu chung từ đám mây.";
+      }else if(!loadData()){
+        generateSchedule();
+      }else{
+        renderAll();
+        seedRemote();
+        document.getElementById("generatorStatus").textContent="Đã đồng bộ dữ liệu của bạn lên đám mây.";
+      }
+    }).catch(()=>{if(!loadData())generateSchedule();});
+    remoteDB.ref(RDB).on("value",snap=>applyRemoteData(snap.val()));
+  }else{
+    if(!loadData())generateSchedule();else{document.getElementById("generatorStatus").textContent="Đã khôi phục dữ liệu từ trình duyệt.";renderAll()}
   }
 })();
 </script>
