@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#2563eb">
 <title>Giải cầu lông 3 đội</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#e11d48;--b:#db2777;--c:#111827;--accent:#2563eb;--ok:#15803d;--warn:#b45309}
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#dc2626;--b:#2563eb;--c:#ea580c;--accent:#2563eb;--ok:#15803d;--warn:#b45309}
 *{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .container{max-width:1200px;margin:auto;padding:20px}
 h1{margin:0 0 4px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
@@ -17,9 +17,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 2px 8px #1018280a}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}}
-.team{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.team h3{margin:0 0 8px;font-size:14px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
+.team{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:10px 12px}.team.a{border-left-color:var(--a)}.team.b{border-left-color:var(--b)}.team.c{border-left-color:var(--c)}.team h3{margin:0 0 8px;font-size:14px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
-.pill{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;background:#eef2f6;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:600}
+.pill{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:600}
+.pill.a{background:#fee2e2;border-color:#fecaca;color:#b91c1c}
+.pill.b{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}
+.pill.c{background:#ffedd5;border-color:#fed7aa;color:#c2410c}
 table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--line);padding:9px 7px;text-align:left;vertical-align:middle}th{font-size:13px;color:var(--muted);background:#fafafa}
 #standings{overflow-x:auto}
 #standings table{min-width:480px}
@@ -27,7 +30,7 @@ table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--li
 .win{font-weight:800;color:var(--ok)} .muted{color:var(--muted)} .champ{font-size:24px;font-weight:900;text-align:center;padding:18px;border-radius:14px;background:#ecfdf3;color:#166534}
 .round-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}.round-title h3{margin:0}
 @media(max-width:560px){.container{padding:14px}.toolbar>button{flex:1 1 46%}}
-.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.score{display:flex;gap:5px;align-items:center}.score input{width:58px;padding:8px;border:1px solid #cfd4dc;border-radius:8px;font-size:18px;text-align:center;font-weight:800}
+.teams{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}.side{font-weight:750}.result{display:flex;gap:8px;align-items:center;font-size:24px;font-weight:900}.result span{min-width:34px;text-align:center}.result-empty{color:#cbd5e1;font-size:16px;font-weight:700;letter-spacing:2px}
 .save{margin-top:9px;width:100%}.saved{background:#ecfdf3;border-color:#86efac}.saved .save{background:var(--ok)}
 .statbox{display:flex;gap:8px;flex-wrap:wrap}.stat{padding:8px 10px;background:#f8fafc;border:1px solid var(--line);border-radius:9px}
 .notice{padding:10px 12px;border-radius:10px;background:#fffbeb;color:#92400e;border:1px solid #fde68a;margin-top:10px}
@@ -47,6 +50,10 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 .modal-sub{font-size:12px;opacity:.92;margin-top:2px}
 .modal-close{background:#ffffff33;border:2px solid #ffffff66;color:#fff;border-radius:50%;width:36px;height:36px;font-size:15px;line-height:1;padding:0}
 .modal-hint{padding:9px 12px;text-align:center;font-size:12px;color:var(--muted);background:#f9fafb;border-bottom:1px solid var(--line)}
+.tiso-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:#f1f5f9;border-bottom:1px solid var(--line)}
+.tiso-team{font-size:12px;font-weight:800}
+.tiso-row input{width:56px;padding:8px;border:1px solid #cfd4dc;border-radius:10px;font-size:20px;font-weight:900;text-align:center}
+.tiso-row b{font-size:18px;color:var(--muted)}
 .side-panel{padding:22px 14px 18px;text-align:center;color:#fff;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;position:relative;overflow:hidden;transition:filter .15s}
 .side-panel .lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.14em;opacity:.95}
 .side-panel .pnames{font-size:14px;font-weight:600;margin:4px 0 8px;opacity:.95}
@@ -95,7 +102,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
     </div>
     <div id="generatorStatus" class="small muted"></div>
     <div class="win-setting">
-      <label>🏁 Điểm thắng (chạm): <input type="number" id="winLimit" min="2" max="99" step="1"></label>
+      <label>🏁 Điểm thắng (chạm): <input type="text" id="winLimit" inputmode="numeric" pattern="[0-9]*" maxlength="2"></label>
       <span class="small muted">Trong ghi điểm nhanh, đội chạm mốc điểm này sẽ tự động thắng và lưu trận.</span>
     </div>
   </div>
@@ -125,7 +132,7 @@ const TEAMS = {
 };
 const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
 const matchups=["AB","AC","BC"];
-let schedule=[], results={}, settings={winLimit:21};
+let schedule=[], results={}, settings={winLimit:25,ver:2};
 
 function keyPair(team,a,b){return team+"|"+[a,b].sort().join("|")}
 function pairAllowed(team,a,b){
@@ -265,8 +272,7 @@ function matchId(r,m){return "r"+r+"s"+m}
 function teamNames(){return {A:"Đội A",B:"Đội B",C:"Đội C"}}
 function renderTeams(){
   const el=document.getElementById("teams"), names=teamNames();
-  const emo={A:"🅰️",B:"🅱️",C:"🅲️"};
-  el.innerHTML=["A","B","C"].map(t=>`<div class="team ${t.toLowerCase()}"><h3>${emo[t]} ${names[t]}</h3><div class="pills">${TEAMS[t].map(x=>`<span class="pill">${x}</span>`).join("")}</div></div>`).join("");
+  el.innerHTML=["A","B","C"].map(t=>`<div class="team ${t.toLowerCase()}"><h3>${names[t]}</h3><div class="pills">${TEAMS[t].map(x=>`<span class="pill ${t.toLowerCase()}">${x}</span>`).join("")}</div></div>`).join("");
 }
 function getStats(){
   const st={A:{played:0,wins:0,losses:0,for:0,against:0},B:{played:0,wins:0,losses:0,for:0,against:0},C:{played:0,wins:0,losses:0,for:0,against:0}};
@@ -306,8 +312,7 @@ function renderSchedule(){
       const saved=(v.a!==""&&v.b!=="");
       html+=`<div class="card ${saved?"saved":""}">
         <div class="round-title"><h3>Lượt ${n} · ${names[a]} vs ${names[b]}</h3><span class="head-right">${saved?'<span class="saved-badge">✓ Đã lưu</span>':""}<button class="score-icon" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</button></span></div>
-        <div class="teams"><div class="side">${pa}</div><div class="score"><input type="number" min="0" id="${id}a" value="${v.a}"><b>-</b><input type="number" min="0" id="${id}b" value="${v.b}"></div><div class="side right">${pb}</div></div>
-        <button class="save" onclick="saveMatch('${id}','${a}','${b}')">Lưu kết quả</button>
+        <div class="teams"><div class="side">${pa}</div><div class="result ${saved?"":"result-empty"}">${saved?`<span style="color:var(--${a.toLowerCase()})">${v.a}</span><b>-</b><span style="color:var(--${b.toLowerCase()})">${v.b}</span>`:"– : –"}</div><div class="side right">${pb}</div></div>
       </div>`;
     }
   }
@@ -322,7 +327,7 @@ function openScoreModal(id){
   const {r,slot}=matchParts(id);
   const rd=schedule[r];if(!rd)return;
   const [a,b]=rd.matchup.split(""), names=teamNames();
-  const colors={A:"#e11d48",B:"#db2777",C:"#374151"};
+  const colors={A:"#dc2626",B:"#2563eb",C:"#ea580c"};
   const pa=rd.pairs[a][slot].map(i=>TEAMS[a][i]).join(" + ");
   const pb=rd.pairs[b][slot].map(i=>TEAMS[b][i]).join(" + ");
   const cur=results[id]||{};
@@ -338,6 +343,13 @@ function openScoreModal(id){
         <button class="modal-close" onclick="closeScoreModal()">✕</button>
       </div>
       <div class="modal-hint">🏁 Chạm ${settings.winLimit} điểm là thắng · bấm vào ô đội để cộng điểm · nút − (góc trên phải) khi bấm nhầm</div>
+      <div class="tiso-row">
+        <span class="tiso-team" style="color:${cA}">${names[a]}</span>
+        <input type="text" id="tisoA" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${va}">
+        <b>-</b>
+        <input type="text" id="tisoB" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${vb}">
+        <span class="tiso-team" style="color:${cB}">${names[b]}</span>
+      </div>
       <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
         <button class="minus" title="Trừ 1 điểm (bấm nhầm)" onclick="event.stopPropagation();confirmMinus('a')">−</button>
         <div class="lab">${names[a]}</div>
@@ -360,6 +372,9 @@ function openScoreModal(id){
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
   scoreUI={id,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aName:names[a],bName:names[b]};
+  const ia=document.getElementById("tisoA"), ib=document.getElementById("tisoB");
+  if(ia)ia.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("a",c)});
+  if(ib)ib.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("b",c)});
 }
 function scoreTap(side){scoreAdjust(side,1)}
 function confirmMinus(side){
@@ -390,13 +405,23 @@ function scoreAdjust(side,delta){
   scoreUI[side]=n;
   const el=document.getElementById("score"+(side==="a"?"A":"B"));
   if(el){el.textContent=n;el.classList.remove("pulse");void el.offsetWidth;el.classList.add("pulse")}
+  const ti=document.getElementById("tiso"+(side==="a"?"A":"B"));
+  if(ti)ti.value=n;
   const panel=document.querySelector('[data-side="'+side+'"]');
   if(panel){panel.classList.remove("flash");void panel.offsetWidth;panel.classList.add("flash")}
   if(delta>0)checkWinLimit();
 }
+function syncTiso(side,val){
+  if(!scoreUI)return;
+  let n=parseInt(val,10);if(isNaN(n)||n<0)n=0;
+  scoreUI[side]=n;
+  const el=document.getElementById("score"+(side==="a"?"A":"B"));
+  if(el){el.textContent=n;el.classList.remove("pulse");void el.offsetWidth;el.classList.add("pulse")}
+  checkWinLimit();
+}
 function checkWinLimit(){
   if(!scoreUI||scoreUI.ended)return;
-  const limit=Number(settings.winLimit)||21;
+  const limit=Number(settings.winLimit)||25;
   const winner=scoreUI.a>=limit?"a":(scoreUI.b>=limit?"b":null);
   if(!winner)return;
   scoreUI.ended=true;
@@ -432,13 +457,6 @@ function closeScoreModal(){
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI){if(scoreUI.confirmOv)closeConfirm();else closeScoreModal()}});
 
-function saveMatch(id,a,b){
-  const va=document.getElementById(id+"a").value,vb=document.getElementById(id+"b").value;
-  if(va===""||vb===""){alert("Nhập đủ điểm hai đội.");return}
-  if(Number(va)===Number(vb)){alert("Không được hòa. Nếu hết giờ hòa điểm, hãy đánh thêm 1 điểm quyết định rồi nhập kết quả.");return}
-  results[id]={a:Number(va),b:Number(vb)};
-  saveData(false);renderAll();
-}
 function renderAll(){renderTeams();renderStandings();renderSchedule();}
 function saveData(notice=true){
   localStorage.setItem("badminton3team",JSON.stringify({schedule,results,settings}));
@@ -449,7 +467,10 @@ function loadData(){
     const x=JSON.parse(localStorage.getItem("badminton3team")||"null");
     if(x&&Array.isArray(x.schedule)&&x.schedule.length===9){
       schedule=x.schedule;results=x.results||{};
-      if(x.settings&&x.settings.winLimit)settings.winLimit=Number(x.settings.winLimit)||21;
+      if(x.settings){
+        if((x.settings.ver||1)<2){settings.winLimit=25;settings.ver=2;saveData(false)}
+        else settings.winLimit=Number(x.settings.winLimit)||25;
+      }
       return true
     }
   }catch(e){}
@@ -468,8 +489,12 @@ function resetAll(){
   const wl=document.getElementById("winLimit");
   if(wl){
     wl.value=settings.winLimit;
+    wl.addEventListener("input",function(){
+      const c=this.value.replace(/\D/g,'');
+      if(this.value!==c)this.value=c;
+    });
     wl.addEventListener("change",function(){
-      const v=parseInt(this.value,10);
+      const v=parseInt(this.value.replace(/\D/g,''),10);
       if(v>=2&&v<=99){settings.winLimit=v;saveData(false)}
       else this.value=settings.winLimit;
     });
