@@ -475,7 +475,7 @@ function readVi(text){
   if(!("speechSynthesis" in window))return;
   try{speechSynthesis.cancel()}catch(_){}
   const u=new SpeechSynthesisUtterance(text);
-  u.lang="vi-VN";u.rate=0.9;u.pitch=1;
+  u.lang="vi-VN";u.rate=0.95;u.pitch=1;
   let v=null;
   try{
     const voices=speechSynthesis.getVoices();
