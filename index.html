@@ -112,10 +112,10 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
   <div class="card">
     <div class="toolbar">
       <button onclick="requestRegenerate()">🎲 Xếp lại lịch</button>
-      <button class="secondary" onclick="saveData()">💾 Lưu</button>
+      <button class="secondary hidden" onclick="saveData()">💾 Lưu</button>
       <button class="secondary hidden" onclick="exportData()">📥 Xuất dữ liệu</button>
       <button class="secondary hidden" onclick="window.print()">🖨️ In</button>
-      <button class="danger" onclick="resetAll()">↺ Reset điểm</button>
+      <button class="danger" onclick="requestReset()">↺ Reset điểm</button>
     </div>
     <div id="generatorStatus" class="small muted"></div>
     <div class="win-setting">
@@ -304,7 +304,9 @@ function buildDeterministicSchedule(){
 }
 /* ===== Xếp lại lịch cần mật khẩu Admin (2277) ===== */
 const ADMIN_PASS="7722".split("").reverse().join("");
-function requestRegenerate(){
+let adminAction="regenerate";
+function openAdminModal(act,title,msg){
+  adminAction=act;
   closeAdmin();
   const ov=document.createElement("div");
   ov.className="confirm-overlay";
@@ -313,9 +315,9 @@ function requestRegenerate(){
   ov.innerHTML=`
     <div class="confirm-card" role="dialog" aria-modal="true">
       <div class="admin-icon">🔒</div>
-      <div class="confirm-title">Xếp lại lịch</div>
+      <div class="confirm-title">${title}</div>
       <div class="confirm-msg">Chức năng này cần quyền <b>Admin</b>.</div>
-      <div class="confirm-sub">Nhập mật khẩu quản trị viên để xếp lại lịch</div>
+      <div class="confirm-sub">${msg}</div>
       <input type="password" id="adminPass" class="admin-pass" placeholder="••••" inputmode="numeric" maxlength="4" autocomplete="off" autocapitalize="off" spellcheck="false">
       <div id="adminErr" class="admin-err"></div>
       <div class="confirm-actions">
@@ -330,13 +332,15 @@ function requestRegenerate(){
     setTimeout(()=>{inp.focus();try{inp.select()}catch(_){}},60);
   }
 }
+function requestRegenerate(){openAdminModal("regenerate","Xếp lại lịch","Nhập mật khẩu quản trị viên để xếp lại lịch");}
+function requestReset(){openAdminModal("reset","Reset điểm","Nhập mật khẩu quản trị viên để xóa toàn bộ điểm (lịch thi đấu giữ nguyên)");}
 function closeAdmin(){const el=document.getElementById("adminOverlay");if(el)el.remove();}
 function submitAdmin(){
   const inp=document.getElementById("adminPass"), err=document.getElementById("adminErr");
   if(!inp)return;
   if(inp.value.replace(/\D/g,"")===ADMIN_PASS){
     closeAdmin();
-    generateSchedule();
+    if(adminAction==="reset")resetAll();else generateSchedule();
   }else{
     if(err)err.textContent="❌ Sai mật khẩu! Vui lòng thử lại.";
     inp.value="";inp.focus();
@@ -664,7 +668,6 @@ function exportData(){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="badminton-3-doi.json";a.click();URL.revokeObjectURL(a.href);
 }
 function resetAll(){
-  if(!confirm("Xóa toàn bộ điểm đã nhập? Lịch thi đấu sẽ được giữ nguyên."))return;
   results={};clearRemoteResults();saveData(false);renderAll();
 }
 function applyRemoteData(v){
