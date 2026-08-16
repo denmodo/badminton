@@ -487,17 +487,16 @@ function readVi(text){
 function speakScore(focus){
   if(!speechOn||!scoreUI)return;
   const aN=numVN(scoreUI.a), bN=numVN(scoreUI.b);
+  // chỉ đọc tên cặp đội vừa ghi điểm + tỉ số (bỏ tên đối thủ)
   const tap=scoreUI.aPairs, oth=scoreUI.bPairs;
-  const tapName=focus==="a"?tap:oth, othName=focus==="a"?oth:tap;
+  const tapName=focus==="a"?tap:oth;
   const tapScore=focus==="a"?aN:bN, othScore=focus==="a"?bN:aN;
-  // chia tên cặp ra từng chữ + dấu phẩy để đọc giãn cách: "Thái, Lộc, mười, chín, Châu, Hoa"
   const tN=tapName.split(/\s+/).join(", ");
-  const oN=othName.split(/\s+/).join(", ");
   let txt;
   if(scoreUI.ended){
-    txt=tN+", thắng. Tỉ số "+tapScore+", "+othScore+", "+oN+".";
+    txt=tN+", thắng. Tỉ số "+tapScore+" - "+othScore+".";
   }else{
-    txt=tN+", "+tapScore+", "+othScore+", "+oN;
+    txt=tN+", "+tapScore+", "+othScore;
   }
   readVi(txt);
 }
