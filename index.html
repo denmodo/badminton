@@ -475,7 +475,7 @@ function readVi(text){
   if(!("speechSynthesis" in window))return;
   try{speechSynthesis.cancel()}catch(_){}
   const u=new SpeechSynthesisUtterance(text);
-  u.lang="vi-VN";u.rate=0.95;u.pitch=1;
+  u.lang="vi-VN";u.rate=0.9;u.pitch=1;
   let v=null;
   try{
     const voices=speechSynthesis.getVoices();
@@ -487,14 +487,17 @@ function readVi(text){
 function speakScore(focus){
   if(!speechOn||!scoreUI)return;
   const aN=numVN(scoreUI.a), bN=numVN(scoreUI.b);
-  const tapName=focus==="a"?scoreUI.aPairs:scoreUI.bPairs;
-  const othName=focus==="a"?scoreUI.bPairs:scoreUI.aPairs;
+  const tap=scoreUI.aPairs, oth=scoreUI.bPairs;
+  const tapName=focus==="a"?tap:oth, othName=focus==="a"?oth:tap;
   const tapScore=focus==="a"?aN:bN, othScore=focus==="a"?bN:aN;
+  // chia tên cặp ra từng chữ + dấu phẩy để đọc giãn cách: "Thái, Lộc, mười, chín, Châu, Hoa"
+  const tN=tapName.split(/\s+/).join(", ");
+  const oN=othName.split(/\s+/).join(", ");
   let txt;
   if(scoreUI.ended){
-    txt=tapName+" thắng. Tỉ số "+tapScore+" - "+othScore+", "+othName+".";
+    txt=tN+", thắng. Tỉ số "+tapScore+", "+othScore+", "+oN+".";
   }else{
-    txt=tapName+", "+tapScore+", "+othScore+", "+othName;
+    txt=tN+", "+tapScore+", "+othScore+", "+oN;
   }
   readVi(txt);
 }
