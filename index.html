@@ -486,14 +486,15 @@ function readVi(text){
 }
 function speakScore(focus){
   if(!speechOn||!scoreUI)return;
-  const a=numVN(scoreUI.a), b=numVN(scoreUI.b);
+  const aN=numVN(scoreUI.a), bN=numVN(scoreUI.b);
+  const tapName=focus==="a"?scoreUI.aPairs:scoreUI.bPairs;
+  const othName=focus==="a"?scoreUI.bPairs:scoreUI.aPairs;
+  const tapScore=focus==="a"?aN:bN, othScore=focus==="a"?bN:aN;
   let txt;
   if(scoreUI.ended){
-    const wn=focus==="a"?scoreUI.aName:scoreUI.bName;
-    txt=wn+" thắng. Tỉ số "+a+" - "+b+".";
+    txt=tapName+" thắng. Tỉ số "+tapScore+" - "+othScore+", "+othName+".";
   }else{
-    const nm=focus==="a"?scoreUI.aName:scoreUI.bName;
-    txt=nm+", "+(focus==="a"?a:b);
+    txt=tapName+", "+tapScore+", "+othScore+", "+othName;
   }
   readVi(txt);
 }
@@ -548,7 +549,7 @@ function openScoreModal(id){
     </div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  scoreUI={id,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aName:names[a],bName:names[b],lastEdit:0};
+  scoreUI={id,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aName:names[a],bName:names[b],aPairs:pa.replace(/\s*\+\s*/g," "),bPairs:pb.replace(/\s*\+\s*/g," "),lastEdit:0};
   const ia=document.getElementById("tisoA"), ib=document.getElementById("tisoB");
   if(ia)ia.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("a",c)});
   if(ib)ib.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("b",c)});
