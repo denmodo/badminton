@@ -145,7 +145,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 const TEAMS = {
   A:["Hà","Bộp","Ngọc","Linh","Hương","Huân"],
   B:["Tân","Đức","Châu","Hiếu","Bình","Hoa"],
-  C:["A Đức","Thái","Tép","Diễn","Lộc","Thảo"]
+  C:["A Đức","Thái","Tép","Lộc","Diễn","Thảo"]
 };
 const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
 const matchups=["AB","AC","BC"];
@@ -278,21 +278,23 @@ function validSchedule(sc){
   return true;
 }
 function buildDeterministicSchedule(){
-  // Chỉ số: A: 0 Hà,1 Bộp,2 Ngọc,3 Linh,4 Hương,5 Huân
-  //        B: 0 Tân,1 Đức,2 Châu,3 Hiếu,4 Bình,5 Hoa
-  //        C: 0 A Đức,1 Thái,2 Tép,3 Diễn,4 Lộc,5 Thảo
-  // Quy tắc: Hà–Tân–A Đức luôn đối đầu nhau; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; không trùng cặp đồng đội.
+  // Chỉ số (A→F = level 1→6):
+  //   A: 0 Hà(1),1 Bộp(2),2 Ngọc(3),3 Linh(4),4 Hương(5),5 Huân(6)
+  //   B: 0 Tân(1),1 Đức(2),2 Châu(3),3 Hiếu(4),4 Bình(5),5 Hoa(6)
+  //   C: 0 A Đức(1),1 Thái(2),2 Tép(3),3 Lộc(4),4 Diễn(5),5 Thảo(6)
+  // Quy tắc: CẶP CÂN THEO LEVEL (mạnh áp yếu: 1+6,2+5,3+4...); Hà–Tân–A Đức luôn đối đầu;
+  // Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; 12 cặp phân biệt/đội.
   // RAW: mỗi dòng = [matchup, A-pair sân1, A-pair sân2, B-pair sân1, B-pair sân2] → 2 TRẬN cùng matchup
   const RAW=[
-    ["AB",[0,1],[3,4],[0,2],[4,3]], // Hà+Bộp vs Tân+Châu | Linh+Hương vs Bình+Hiếu
-    ["AB",[0,2],[1,2],[0,3],[1,5]], // Hà+Ngọc vs Tân+Hiếu | Bộp+Ngọc vs Đức+Hoa
-    ["AB",[1,5],[2,3],[1,2],[4,5]], // Bộp+Huân vs Đức+Châu | Ngọc+Linh vs Bình+Hoa
-    ["AC",[0,3],[0,4],[0,1],[0,2]], // Hà+Linh vs A Đức+Thái | Hà+Hương vs A Đức+Tép
-    ["AC",[4,5],[2,5],[2,3],[3,4]], // Hương+Huân vs Tép+Diễn | Ngọc+Huân vs Diễn+Lộc
-    ["AC",[3,5],[1,4],[1,5],[2,5]], // Linh+Huân vs Thái+Thảo | Bộp+Hương vs Tép+Thảo
-    ["BC",[0,4],[0,5],[0,4],[0,3]], // Tân+Bình vs A Đức+Lộc | Tân+Hoa vs A Đức+Diễn
-    ["BC",[1,3],[1,4],[4,5],[3,5]], // Đức+Hiếu vs Lộc+Thảo | Đức+Bình vs Diễn+Thảo
-    ["BC",[2,3],[2,5],[1,2],[1,4]]  // Châu+Hiếu vs Thái+Tép | Châu+Hoa vs Thái+Lộc
+    ["AB",[4,5],[1,3],[2,5],[1,3]], // Hương+Huân vs Châu+Hoa | Bộp+Linh vs Đức+Hiếu
+    ["AB",[0,2],[2,3],[0,2],[1,4]], // Hà+Ngọc vs Tân+Châu | Ngọc+Linh vs Đức+Bình
+    ["AB",[1,5],[0,4],[3,4],[0,5]], // Bộp+Huân vs Hiếu+Bình | Hà+Hương vs Tân+Hoa
+    ["AC",[0,5],[1,4],[0,5],[1,4]], // Hà+Huân vs A Đức+Thảo | Bộp+Hương vs Thái+Diễn
+    ["AC",[2,5],[0,3],[3,4],[0,2]], // Ngọc+Huân vs Lộc+Diễn | Hà+Linh vs A Đức+Tép
+    ["AC",[1,2],[3,4],[1,3],[2,5]], // Bộp+Ngọc vs Thái+Lộc | Linh+Hương vs Tép+Thảo
+    ["BC",[2,3],[0,4],[2,3],[0,4]], // Châu+Hiếu vs Tép+Lộc | Tân+Bình vs A Đức+Diễn
+    ["BC",[0,3],[1,2],[0,3],[1,2]], // Tân+Hiếu vs A Đức+Lộc | Đức+Châu vs Thái+Tép
+    ["BC",[4,5],[1,5],[4,5],[1,5]]  // Bình+Hoa vs Diễn+Thảo | Đức+Hoa vs Thái+Thảo
   ];
   const out=[];
   for(const [m,a1,a2,b1,b2] of RAW){
@@ -391,7 +393,7 @@ function generateSchedule(){
   settings.genTs=Date.now();
   pushAllToCloud();
   const wl=document.getElementById("winLimit");if(wl)wl.value=21;
-  status.textContent="Đã xếp lại lịch công bằng ("+schedule.length+" trận): không ai phải đánh 2 trận liên tiếp, kể cả khi 2 sân chạy song song. Vẫn đúng quy tắc Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp; mỗi người đúng 4 trận.";
+  status.textContent="Đã xếp lại lịch công bằng theo LEVEL ("+schedule.length+" trận): mỗi cặp = 1 mạnh + 1 yếu, trận nào 2 bên cũng ngang tổng level, không ai đánh 2 trận liên tiếp. Vẫn đúng Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp; mỗi người 4 trận.";
   renderAll();
 }
 function matchId(i){return "m"+i}
