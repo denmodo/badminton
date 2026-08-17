@@ -24,6 +24,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}}
 .sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(max-width:560px){.sponsors{grid-template-columns:1fr}}
+.sponsor-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sponsor-head h2{margin:0}
+.sm-btn{min-width:60px;padding:7px 12px;font-size:13px;border-radius:10px;background:#eef2ff;color:#3730a3;font-weight:700}
+.sm-btn:hover{background:#e0e7ff}
+.sm-btn.hid{background:#fef2f2;color:#b42318}
+.sm-btn.hid:hover{background:#fee2e2}
 .sponsor{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 8px #1018280a;transition:transform .15s;cursor:zoom-in}
 .sponsor:active{transform:scale(.98)}
 .sponsor .simg{aspect-ratio:4/3;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
@@ -136,8 +142,11 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
   </div>
 
   <div class="card">
-    <h2>🤝 Nhà tài trợ</h2>
-    <div class="sponsors">
+    <div class="sponsor-head">
+      <h2>🤝 Nhà tài trợ</h2>
+      <button type="button" class="sm-btn" id="sponsorToggle" onclick="toggleSponsors()" title="Ẩn/Hiện ảnh nhà tài trợ">Ẩn</button>
+    </div>
+    <div class="sponsors" id="sponsorList">
       <a class="sponsor" href="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/513824713_30228043570175820_3314242028278186366_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1001x1500&amp;ctp=s1001x1500&amp;_nc_cat=107&amp;ccb=1-7&amp;_nc_sid=cf85f3&amp;_nc_eui2=AeHk5E5ZKAuq-1x2wJWL3FJ2PcWoGcBNSqs9xagZwE1Kq2EUvZJwej5qyv2ACnbLT5YvPSxeuJjLhWlTKbUNdBU3&amp;_nc_ohc=SqcsP9kmv54Q7kNvwEgw9gs&amp;_nc_oc=Adobq7vPnzh7Hm4XtgWWDssYCA3xGYzNDq5u1dCKRz_0mlfXQ4KTXTD-lqoTXvUAhflS7HFKUQAMZWFmlaQLioFB&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=U9WnqTrISumHi3IY-dhN2w&amp;_nc_ss=7b2a8&amp;oh=00_AQGfgldOiqlLWgKh8OePg567XUU3uzuEIE-TnSwpWUOQDQ&amp;oe=6A88DC0C" target="_blank" rel="noopener">
         <span class="simg"><img src="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/513824713_30228043570175820_3314242028278186366_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1001x1500&amp;ctp=s1001x1500&amp;_nc_cat=107&amp;ccb=1-7&amp;_nc_sid=cf85f3&amp;_nc_eui2=AeHk5E5ZKAuq-1x2wJWL3FJ2PcWoGcBNSqs9xagZwE1Kq2EUvZJwej5qyv2ACnbLT5YvPSxeuJjLhWlTKbUNdBU3&amp;_nc_ohc=SqcsP9kmv54Q7kNvwEgw9gs&amp;_nc_oc=Adobq7vPnzh7Hm4XtgWWDssYCA3xGYzNDq5u1dCKRz_0mlfXQ4KTXTD-lqoTXvUAhflS7HFKUQAMZWFmlaQLioFB&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=U9WnqTrISumHi3IY-dhN2w&amp;_nc_ss=7b2a8&amp;oh=00_AQGfgldOiqlLWgKh8OePg567XUU3uzuEIE-TnSwpWUOQDQ&amp;oe=6A88DC0C" alt="Tân 1 Cú" loading="lazy" referrerpolicy="no-referrer"></span>
         <span class="sname">Tân 1 Cú</span>
@@ -362,6 +371,17 @@ function openAdminModal(act,title,msg){
 function requestRegenerate(){openAdminModal("regenerate","Xếp lại lịch","Nhập mật khẩu quản trị viên để xếp lại lịch");}
 function requestReset(){openAdminModal("reset","Reset điểm","Nhập mật khẩu quản trị viên để xóa toàn bộ điểm (lịch thi đấu giữ nguyên)");}
 function closeAdmin(){const el=document.getElementById("adminOverlay");if(el)el.remove();}
+function toggleSponsors(){
+  const el=document.getElementById("sponsorList"), bt=document.getElementById("sponsorToggle");
+  if(!el)return;
+  const hide=!el.classList.contains("hidden");
+  el.classList.toggle("hidden",hide);
+  if(bt){
+    bt.textContent=hide?"Hiện":"Ẩn";
+    bt.classList.toggle("hid",hide);
+    bt.title=hide?"Mở lại ảnh nhà tài trợ":"Ẩn ảnh nhà tài trợ";
+  }
+}
 function openSponsor(name,src){
   const ov=document.createElement("div");
   ov.className="sponsor-zoom";ov.id="sponsorZoom";
