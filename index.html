@@ -24,11 +24,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}}
 .sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(max-width:560px){.sponsors{grid-template-columns:1fr}}
-.sponsor{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 8px #1018280a;transition:transform .15s}
+.sponsor{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 8px #1018280a;transition:transform .15s;cursor:zoom-in}
 .sponsor:active{transform:scale(.98)}
-.sponsor .simg{aspect-ratio:4/3;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.sponsor .simg img{width:100%;height:100%;object-fit:cover;display:block}
+.sponsor .simg{aspect-ratio:4/3;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+.sponsor .simg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
+.sponsor:hover .simg img,.sponsor:active .simg img{transform:scale(1.12)}
 .sponsor .sname{display:block;text-align:center;padding:9px 10px;font-weight:800;color:var(--text)}
+.sponsor-zoom{position:fixed;inset:0;background:#101828e6;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-out;backdrop-filter:blur(2px);animation:fadeIn .15s}
+.sponsor-zoom img{max-width:100%;max-height:92vh;border-radius:12px;box-shadow:0 24px 70px #0009}
+.sponsor-zoom .szoom-name{position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;font-size:16px}
 .team{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:10px 12px}.team.a{border-left-color:var(--a)}.team.b{border-left-color:var(--b)}.team.c{border-left-color:var(--c)}.team h3{margin:0 0 8px;font-size:14px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
 .pill{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:600}
@@ -358,6 +362,19 @@ function openAdminModal(act,title,msg){
 function requestRegenerate(){openAdminModal("regenerate","Xếp lại lịch","Nhập mật khẩu quản trị viên để xếp lại lịch");}
 function requestReset(){openAdminModal("reset","Reset điểm","Nhập mật khẩu quản trị viên để xóa toàn bộ điểm (lịch thi đấu giữ nguyên)");}
 function closeAdmin(){const el=document.getElementById("adminOverlay");if(el)el.remove();}
+function openSponsor(name,src){
+  const ov=document.createElement("div");
+  ov.className="sponsor-zoom";ov.id="sponsorZoom";
+  ov.onclick=e=>closeSponsor();
+  ov.innerHTML=`<img src="${src}" alt="${name}"><div class="szoom-name">${name}</div>`;
+  document.body.appendChild(ov);
+  document.body.style.overflow="hidden";
+}
+function closeSponsor(){const el=document.getElementById("sponsorZoom");if(el)el.remove();document.body.style.overflow="";}
+document.addEventListener("click",function(e){
+  const s=e.target&&e.target.closest?e.target.closest(".sponsor"):null;
+  if(s){e.preventDefault();const img=s.querySelector("img");const nm=(s.querySelector(".sname")||{}).textContent||"";if(img)openSponsor(nm,img.src);}
+});
 function submitAdmin(){
   const inp=document.getElementById("adminPass"), err=document.getElementById("adminErr");
   if(!inp)return;
@@ -370,7 +387,7 @@ function submitAdmin(){
     inp.classList.add("shake");setTimeout(()=>inp.classList.remove("shake"),350);
   }
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAdmin()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAdmin();closeSponsor();}});
 
 function shuffledSchedule(){
   // Giữ nguyên bộ cặp thoả mọi quy tắc (Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp;
