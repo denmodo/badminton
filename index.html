@@ -22,6 +22,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;box-shadow:0 2px 8px #1018280a}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}}
+.sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:560px){.sponsors{grid-template-columns:1fr}}
+.sponsor{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 8px #1018280a;transition:transform .15s}
+.sponsor:active{transform:scale(.98)}
+.sponsor .simg{aspect-ratio:4/3;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.sponsor .simg img{width:100%;height:100%;object-fit:cover;display:block}
+.sponsor .sname{display:block;text-align:center;padding:9px 10px;font-weight:800;color:var(--text)}
 .team{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:10px 12px}.team.a{border-left-color:var(--a)}.team.b{border-left-color:var(--b)}.team.c{border-left-color:var(--c)}.team h3{margin:0 0 8px;font-size:14px}.team.a h3{color:var(--a)}.team.b h3{color:var(--b)}.team.c h3{color:var(--c)}
 .pills{display:flex;flex-wrap:wrap;gap:6px}
 .pill{display:inline-flex;align-items:center;padding:3px 11px;border-radius:999px;background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;font-size:13px;font-weight:600}
@@ -121,6 +128,20 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
     <div class="win-setting">
       <label>🏁 Điểm thắng (chạm): <input type="text" id="winLimit" inputmode="numeric" pattern="[0-9]*" maxlength="2"></label>
       <span class="small muted">Trong ghi điểm nhanh, đội chạm mốc điểm này sẽ tự động thắng và lưu trận.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🤝 Nhà tài trợ</h2>
+    <div class="sponsors">
+      <a class="sponsor" href="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/513824713_30228043570175820_3314242028278186366_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1001x1500&amp;ctp=s1001x1500&amp;_nc_cat=107&amp;ccb=1-7&amp;_nc_sid=cf85f3&amp;_nc_eui2=AeHk5E5ZKAuq-1x2wJWL3FJ2PcWoGcBNSqs9xagZwE1Kq2EUvZJwej5qyv2ACnbLT5YvPSxeuJjLhWlTKbUNdBU3&amp;_nc_ohc=SqcsP9kmv54Q7kNvwEgw9gs&amp;_nc_oc=Adobq7vPnzh7Hm4XtgWWDssYCA3xGYzNDq5u1dCKRz_0mlfXQ4KTXTD-lqoTXvUAhflS7HFKUQAMZWFmlaQLioFB&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=U9WnqTrISumHi3IY-dhN2w&amp;_nc_ss=7b2a8&amp;oh=00_AQGfgldOiqlLWgKh8OePg567XUU3uzuEIE-TnSwpWUOQDQ&amp;oe=6A88DC0C" target="_blank" rel="noopener">
+        <span class="simg"><img src="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/513824713_30228043570175820_3314242028278186366_n.jpg?stp=dst-jpg_tt6&amp;cstp=mx1001x1500&amp;ctp=s1001x1500&amp;_nc_cat=107&amp;ccb=1-7&amp;_nc_sid=cf85f3&amp;_nc_eui2=AeHk5E5ZKAuq-1x2wJWL3FJ2PcWoGcBNSqs9xagZwE1Kq2EUvZJwej5qyv2ACnbLT5YvPSxeuJjLhWlTKbUNdBU3&amp;_nc_ohc=SqcsP9kmv54Q7kNvwEgw9gs&amp;_nc_oc=Adobq7vPnzh7Hm4XtgWWDssYCA3xGYzNDq5u1dCKRz_0mlfXQ4KTXTD-lqoTXvUAhflS7HFKUQAMZWFmlaQLioFB&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=U9WnqTrISumHi3IY-dhN2w&amp;_nc_ss=7b2a8&amp;oh=00_AQGfgldOiqlLWgKh8OePg567XUU3uzuEIE-TnSwpWUOQDQ&amp;oe=6A88DC0C" alt="Tân 1 Cú" loading="lazy" referrerpolicy="no-referrer"></span>
+        <span class="sname">Tân 1 Cú</span>
+      </a>
+      <a class="sponsor" href="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/623391665_25789926184006975_8381255966577620923_n.jpg?stp=cp6_dst-jpg_tt6&amp;cstp=mx1480x1480&amp;ctp=s1480x1480&amp;_nc_cat=111&amp;ccb=1-7&amp;_nc_sid=a5f93a&amp;_nc_eui2=AeF4l1MTMPTfCNknew3D1mp9xokZU9J0xt_GiRlT0nTG37sfyabARYF2Ly36qpIedEx1JEZwEq8rUdwuv3a08NGj&amp;_nc_ohc=ErNf6X6GK0EQ7kNvwHjyRa4&amp;_nc_oc=Adr2GQKdYPKEBKlAEH8OFJQGFRhM_8SZxgTpT4TXSllozYnYogw_mxrhi6XlgJBmfxnh7k42begXBpvitKsW13Hp&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=QxQwA_lmvgQmbeDXG0LWZw&amp;_nc_ss=7b2a8&amp;oh=00_AQGN4AbRjazZUEf4Mg7Vl3N0W4HI4I9vPF2i8lFVqa5CUg&amp;oe=6A88B9B8" target="_blank" rel="noopener">
+        <span class="simg"><img src="https://scontent.fdad3-6.fna.fbcdn.net/v/t39.30808-6/623391665_25789926184006975_8381255966577620923_n.jpg?stp=cp6_dst-jpg_tt6&amp;cstp=mx1480x1480&amp;ctp=s1480x1480&amp;_nc_cat=111&amp;ccb=1-7&amp;_nc_sid=a5f93a&amp;_nc_eui2=AeF4l1MTMPTfCNknew3D1mp9xokZU9J0xt_GiRlT0nTG37sfyabARYF2Ly36qpIedEx1JEZwEq8rUdwuv3a08NGj&amp;_nc_ohc=ErNf6X6GK0EQ7kNvwHjyRa4&amp;_nc_oc=Adr2GQKdYPKEBKlAEH8OFJQGFRhM_8SZxgTpT4TXSllozYnYogw_mxrhi6XlgJBmfxnh7k42begXBpvitKsW13Hp&amp;_nc_zt=23&amp;_nc_ht=scontent.fdad3-6.fna&amp;_nc_gid=QxQwA_lmvgQmbeDXG0LWZw&amp;_nc_ss=7b2a8&amp;oh=00_AQGN4AbRjazZUEf4Mg7Vl3N0W4HI4I9vPF2i8lFVqa5CUg&amp;oe=6A88B9B8" alt="Hiếu Thứ Hai" loading="lazy" referrerpolicy="no-referrer"></span>
+        <span class="sname">Hiếu Thứ Hai</span>
+      </a>
     </div>
   </div>
 
