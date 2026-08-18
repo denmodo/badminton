@@ -468,9 +468,12 @@ function generateSchedule(){
 }
 function matchId(i){return "m"+i}
 function teamNames(){return {A:"Đội A",B:"Đội B",C:"Đội C"}}
+// Tân & Hiếu là nhà tài trợ → thêm ⭐ sau tên khi hiển thị (giọng đọc vẫn dùng tên gốc)
+const SPONSOR_STAR=new Set(["Tân","Hiếu"]);
+function pname(n){return SPONSOR_STAR.has(n)?n+"⭐":n}
 function renderTeams(){
   const el=document.getElementById("teams"), names=teamNames();
-  el.innerHTML=["A","B","C"].map(t=>`<div class="team ${t.toLowerCase()}"><h3>${names[t]}</h3><div class="pills">${TEAMS[t].map(x=>`<span class="pill ${t.toLowerCase()}">${x}</span>`).join("")}</div></div>`).join("");
+  el.innerHTML=["A","B","C"].map(t=>`<div class="team ${t.toLowerCase()}"><h3>${names[t]}</h3><div class="pills">${TEAMS[t].map(x=>`<span class="pill ${t.toLowerCase()}">${pname(x)}</span>`).join("")}</div></div>`).join("");
 }
 function getStats(){
   const st={A:{played:0,wins:0,losses:0,for:0,against:0},B:{played:0,wins:0,losses:0,for:0,against:0},C:{played:0,wins:0,losses:0,for:0,against:0}};
@@ -502,8 +505,8 @@ function renderSchedule(){
   schedule.forEach((m,i)=>{
     const [a,b]=m.matchup.split(""), id="m"+i, n=i+1;
     const v=results[id]||{a:"",b:""};
-    const pa=m.pairs[a].map(p=>TEAMS[a][p]).join(" + ");
-    const pb=m.pairs[b].map(p=>TEAMS[b][p]).join(" + ");
+    const pa=m.pairs[a].map(p=>pname(TEAMS[a][p])).join(" + ");
+    const pb=m.pairs[b].map(p=>pname(TEAMS[b][p])).join(" + ");
     const hasScore=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
     const done=hasScore&&v.done===true;
     let cardStyle="", mark="", resCls="result result-empty", resTxt="- : -";
@@ -586,8 +589,8 @@ function openScoreModal(id){
   const rd=schedule[i];if(!rd)return;
   const [a,b]=rd.matchup.split(""), names=teamNames();
   const colors={A:"#dc2626",B:"#2563eb",C:"#ea580c"};
-  const pa=rd.pairs[a].map(x=>TEAMS[a][x]).join(" + ");
-  const pb=rd.pairs[b].map(x=>TEAMS[b][x]).join(" + ");
+  const na=rd.pairs[a].map(x=>TEAMS[a][x]), nb=rd.pairs[b].map(x=>TEAMS[b][x]);
+  const pa=na.map(pname).join(" + "), pb=nb.map(pname).join(" + ");
   const cur=results[id]||{};
   const va=cur.a!==""&&cur.a!=null?Number(cur.a):0;
   const vb=cur.b!==""&&cur.b!=null?Number(cur.b):0;
@@ -627,7 +630,7 @@ function openScoreModal(id){
     </div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  scoreUI={id,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aName:names[a],bName:names[b],aPairs:pa.replace(/\s*\+\s*/g," "),bPairs:pb.replace(/\s*\+\s*/g," "),lastEdit:0};
+  scoreUI={id,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aName:names[a],bName:names[b],aPairs:na.join(" "),bPairs:nb.join(" "),lastEdit:0};
   const ia=document.getElementById("tisoA"), ib=document.getElementById("tisoB");
   if(ia)ia.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("a",c)});
   if(ib)ib.addEventListener("input",function(){const c=this.value.replace(/\D/g,'');if(this.value!==c)this.value=c;syncTiso("b",c)});
