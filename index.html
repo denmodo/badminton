@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#dc2626;--b:#2563eb;--c:#ea580c;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--winbg-a:#fee2e2;--winbord-a:#fecaca;--winbg-b:#dbeafe;--winbord-b:#bfdbfe;--winbg-c:#ffedd5;--winbord-c:#fed7aa}
 *{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Vietnamese","Noto Sans",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -725,6 +726,14 @@ function showWinBanner(winner){
     <div class="win-note">Chạm mốc ${settings.winLimit} điểm — trận đã tự động kết thúc và được lưu.</div>
     <button class="green" onclick="closeScoreModal()">✅ Đóng</button>`;
   modal.appendChild(cover);
+  // Pháo hoa ăn mừng toàn màn hình
+  if(typeof confetti!=="undefined"){
+    const colors={a:"#dc2626",b:"#2563eb",c:"#ea580c"};
+    const c=colors[winner]||"#2563eb";
+    confetti({particleCount:120,spread:80,origin:{y:0.6},colors:[c,"#fbbf24","#fff"]});
+    setTimeout(()=>confetti({particleCount:80,spread:120,origin:{y:0.3,x:0.3},colors:[c,"#fbbf24","#fff"]}),200);
+    setTimeout(()=>confetti({particleCount:80,spread:120,origin:{y:0.3,x:0.7},colors:[c,"#fbbf24","#fff"]}),400);
+  }
 }
 function closeScoreModal(){
   closeConfirm();
