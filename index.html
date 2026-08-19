@@ -316,20 +316,19 @@ function buildDeterministicSchedule(){
   //   A: 0 Hà(1),1 Bộp(2),2 Ngọc(3),3 Linh(4),4 Hương(5),5 Huân(6)
   //   B: 0 Tân(1),1 Đức(2),2 Châu(3),3 Hiếu(4),4 Bình(5),5 Hoa(6)
   //   C: 0 A Đức(1),1 Thái(2),2 Tép(3),3 Lộc(4),4 Diễn(5),5 Thảo(6)
-  // Quy tắc: LEVEL 1 & 2 ĐÁNH CẶP NHAU (mỗi đội có cặp (0,1) = 2 người mạnh nhất sát cánh);
-  // phần còn lại ghép mạnh áp yếu (1+6,2+5,3+4...); Hà–Tân–A Đức luôn đối đầu;
-  // Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; 12 cặp phân biệt/đội.
+  // Quy tắc: A & C có cặp level 1+2 (Hà+Bộp, A Đức+Thái) đối đầu nhau; B không ép 1+2 (vẫn cân bằng mạnh áp yếu);
+  // Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; 12 cặp phân biệt/đội.
   // RAW: mỗi dòng = [matchup, A-pair sân1, A-pair sân2, B-pair sân1, B-pair sân2] → 2 TRẬN cùng matchup
   const RAW=[
-    ["AB",[1,4],[2,3],[1,3],[2,4]], // Bộp+Hương vs Đức+Hiếu | Ngọc+Linh vs Châu+Bình
-    ["AB",[1,5],[3,4],[2,5],[4,5]], // Bộp+Huân vs Châu+Hoa | Linh+Hương vs Bình+Hoa
-    ["AB",[0,5],[0,2],[0,3],[0,1]], // Hà+Huân vs Tân+Hiếu | Hà+Ngọc vs Tân+Đức (L1+L2)
-    ["AC",[0,4],[1,3],[0,4],[1,3]], // Hà+Hương vs A Đức+Diễn | Bộp+Linh vs Thái+Lộc
-    ["AC",[2,5],[0,1],[2,5],[0,1]], // Ngọc+Huân vs Tép+Thảo | Hà+Bộp vs A Đức+Thái (L1+L2)
-    ["AC",[2,4],[3,5],[2,4],[3,5]], // Ngọc+Hương vs Tép+Diễn | Linh+Huân vs Lộc+Thảo
-    ["BC",[0,5],[1,4],[0,5],[1,4]], // Tân+Hoa vs A Đức+Thảo | Đức+Bình vs Thái+Diễn
-    ["BC",[2,3],[0,2],[2,3],[0,2]], // Châu+Hiếu vs Tép+Lộc | Tân+Châu vs A Đức+Tép
-    ["BC",[1,5],[3,4],[1,5],[3,4]]  // Đức+Hoa vs Thái+Thảo | Hiếu+Bình vs Lộc+Diễn
+    ["AB",[3,4],[1,4],[1,5],[2,3]],
+    ["AB",[0,2],[2,5],[0,3],[4,5]],
+    ["AB",[0,5],[1,3],[0,4],[1,2]],
+    ["AC",[2,3],[0,4],[2,3],[0,4]],
+    ["AC",[1,5],[0,1],[1,5],[0,1]],
+    ["AC",[2,4],[3,5],[2,4],[3,5]],
+    ["BC",[0,5],[1,4],[0,5],[1,4]],
+    ["BC",[1,3],[2,5],[1,3],[2,5]],
+    ["BC",[0,2],[3,4],[0,2],[3,4]]
   ];
   const out=[];
   for(const [m,a1,a2,b1,b2] of RAW){
@@ -464,7 +463,7 @@ function generateSchedule(){
   settings.genTs=Date.now();
   pushAllToCloud();
   const wl=document.getElementById("winLimit");if(wl)wl.value=21;
-  status.textContent="Đã xếp lại lịch theo LEVEL ("+schedule.length+" trận): level 1&2 mỗi đội đánh cặp nhau, còn lại mạnh áp yếu, trận cân tổng level, không ai đánh 2 trận liên tiếp. Vẫn đúng Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp; mỗi người 4 trận.";
+  status.textContent="Đã xếp lại lịch theo LEVEL ("+schedule.length+" trận): A & C có cặp L1+L2 đối đầu, B cân bằng mạnh áp yếu, trận cân tổng level, không ai đánh 2 trận liên tiếp. Vẫn đúng Hà–Tân–A Đức đối đầu; Hoa & Hiếu không cặp; mỗi người 4 trận.";
   renderAll();
 }
 function matchId(i){return "m"+i}
