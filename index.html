@@ -178,7 +178,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 <script>
 const TEAMS = {
   A:["Hà","Bộp","Ngọc","Linh","Hương","Huân"],
-  B:["Tân","Đức","Hiếu","Châu","Bình","Hoa"],
+  B:["Tân","Đức","Hiếu","Bình","Châu","Hoa"],
   C:["A Đức","Thái","Tép","Lộc","Diễn","Thảo"]
 };
 const forbidden = new Set(["B|Hiếu|Hoa","B|Hoa|Hiếu"]);
@@ -314,7 +314,7 @@ function validSchedule(sc){
 function buildDeterministicSchedule(){
   // Chỉ số (A→F = level 1→6):
   //   A: 0 Hà(1),1 Bộp(2),2 Ngọc(3),3 Linh(4),4 Hương(5),5 Huân(6)
-  //   B: 0 Tân(1),1 Đức(2),2 Hiếu(3),3 Châu(4),4 Bình(5),5 Hoa(6)
+  //   B: 0 Tân(1),1 Đức(2),2 Hiếu(3),3 Bình(4),4 Châu(5),5 Hoa(6)
   //   C: 0 A Đức(1),1 Thái(2),2 Tép(3),3 Lộc(4),4 Diễn(5),5 Thảo(6)
   // Quy tắc: A & C có cặp level 1+2 (Hà+Bộp, A Đức+Thái) đối đầu nhau; B không ép 1+2 (vẫn cân bằng mạnh áp yếu);
   // Hà–Tân–A Đức luôn đối đầu; Hoa & Hiếu không chung cặp; mỗi người đúng 4 trận; 12 cặp phân biệt/đội.
