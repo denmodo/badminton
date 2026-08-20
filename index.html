@@ -13,6 +13,7 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--a:#dc2626;--b:#2563eb;--c:#ea580c;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--winbg-a:#fee2e2;--winbord-a:#fecaca;--winbg-b:#dbeafe;--winbord-b:#bfdbfe;--winbg-c:#ffedd5;--winbord-c:#fed7aa}
+body.dark{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--line:#334155;--a:#ef4444;--b:#60a5fa;--c:#fb923c;--accent:#3b82f6;--ok:#22c55e;--warn:#f59e0b;--winbg-a:#7f1d1d;--winbord-a:#991b1b;--winbg-b:#1e3a5f;--winbord-b:#1e40af;--winbg-c:#7c2d12;--winbord-c:#9a3412}
 *{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Vietnamese","Noto Sans",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
 .container{max-width:1200px;margin:auto;padding:20px}
 h1{margin:0 0 4px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
@@ -35,10 +36,12 @@ body:not(.ref):not(.admin) .ref-only{display:none!important}
 .sm-btn.hid:hover{background:#fee2e2}
 .sponsor{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 2px 8px #1018280a;transition:transform .15s;cursor:zoom-in}
 .sponsor:active{transform:scale(.98)}
-.sponsor .simg{aspect-ratio:4/3;background:#f1f5f9;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
+.sponsor .simg{aspect-ratio:4/3;background:#1e293b33;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative}
 .sponsor .simg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
 .sponsor:hover .simg img,.sponsor:active .simg img{transform:scale(1.12)}
 .sponsor .sname{display:block;text-align:center;padding:9px 10px;font-weight:800;color:var(--text)}
+.dark-toggle{position:fixed;bottom:16px;right:16px;z-index:999;width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 12px #00000026;font-size:20px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;color:var(--text)}
+.dark-toggle:active{transform:scale(.9)}
 .sponsor-zoom{position:fixed;inset:0;background:#101828e6;z-index:1200;display:flex;align-items:center;justify-content:center;padding:18px;cursor:zoom-out;backdrop-filter:blur(2px);animation:fadeIn .15s}
 .sponsor-zoom img{max-width:100%;max-height:92vh;border-radius:12px;box-shadow:0 24px 70px #0009}
 .sponsor-zoom .szoom-name{position:fixed;bottom:16px;left:0;right:0;text-align:center;color:#fff;font-weight:800;text-shadow:0 1px 4px #000;font-size:16px}
@@ -384,6 +387,21 @@ function applySponsorState(){
   el.classList.toggle("hidden",hide);
   bt.textContent=hide?"Hiện":"Ẩn";
   bt.classList.toggle("hid",hide);
+}
+function darkState(){try{return localStorage.getItem("bathon_dark")==="1"}catch(_){return false}}
+function setDark(v){try{localStorage.setItem("bathon_dark",v?"1":"0")}catch(_){}}
+function applyDarkState(){
+  const d=darkState();
+  document.body.classList.toggle("dark",d);
+  const bt=document.getElementById("darkToggle");
+  if(bt)bt.textContent=d?"☀️":"🌙";
+  else setTimeout(applyDarkState,80);
+}
+function toggleDark(){
+  const d=!document.body.classList.contains("dark");
+  document.body.classList.toggle("dark",d);
+  setDark(d);
+  const bt=document.getElementById("darkToggle");if(bt)bt.textContent=d?"☀️":"🌙";
 }
 function toggleSponsors(){
   const el=document.getElementById("sponsorList"), bt=document.getElementById("sponsorToggle");
@@ -798,6 +816,7 @@ function setupWinLimitInput(){
 (function init(){
   setupWinLimitInput();
   applySponsorState();
+  applyDarkState();
   const p=new URLSearchParams(window.location.search);if(p.has("admin"))document.body.classList.add("admin");if(p.has("ref"))document.body.classList.add("ref");
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
@@ -817,7 +836,7 @@ function setupWinLimitInput(){
     generateSchedule();
     document.getElementById("generatorStatus").textContent="Chưa cấu hình Firebase — hiện lịch mặc định, không đồng bộ.";
   }
-})();
-</script>
+})();</script>
+<button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Chế độ tối/sáng">🌙</button>
 </body>
 </html>
