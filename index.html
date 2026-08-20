@@ -798,8 +798,7 @@ function setupWinLimitInput(){
 (function init(){
   setupWinLimitInput();
   applySponsorState();
-  if(window.location.search.includes("admin=den"))document.body.classList.add("admin");
-  if(window.location.search.includes("ref=den"))document.body.classList.add("ref");
+  const p=new URLSearchParams(window.location.search);if(p.has("admin"))document.body.classList.add("admin");if(p.has("ref"))document.body.classList.add("ref");
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
       const d=snap.val();
