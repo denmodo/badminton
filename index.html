@@ -25,6 +25,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}}
 .sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(max-width:560px){.sponsors{grid-template-columns:1fr}}
+body:not(.admin) .admin-needed{display:none!important}
 .sponsor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .sponsor-head h2{margin:0}
 .sm-btn{min-width:60px;padding:7px 12px;font-size:13px;border-radius:10px;background:#eef2ff;color:#3730a3;font-weight:700}
@@ -129,11 +130,11 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 
   <div class="card">
     <div class="toolbar">
-      <button onclick="requestRegenerate()">🎲 Xếp lại lịch</button>
+      <button class="admin-needed" onclick="requestRegenerate()">🎲 Xếp lại lịch</button>
       <button class="secondary hidden" onclick="saveData()">💾 Lưu</button>
       <button class="secondary hidden" onclick="exportData()">📥 Xuất dữ liệu</button>
       <button class="secondary hidden" onclick="window.print()">🖨️ In</button>
-      <button class="danger" onclick="requestReset()">↺ Reset điểm</button>
+      <button class="danger admin-needed" onclick="requestReset()">↺ Reset điểm</button>
     </div>
     <div id="generatorStatus" class="small muted"></div>
     <div class="win-setting">
@@ -796,6 +797,7 @@ function setupWinLimitInput(){
 (function init(){
   setupWinLimitInput();
   applySponsorState();
+  if(window.location.search.includes("admin=den"))document.body.classList.add("admin");
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
       const d=snap.val();
