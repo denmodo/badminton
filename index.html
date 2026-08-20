@@ -26,6 +26,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 @media(max-width:560px){.sponsors{grid-template-columns:1fr}}
 body:not(.admin) .admin-needed{display:none!important}
+body:not(.ref):not(.admin) .ref-only{display:none!important}
 .sponsor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .sponsor-head h2{margin:0}
 .sm-btn{min-width:60px;padding:7px 12px;font-size:13px;border-radius:10px;background:#eef2ff;color:#3730a3;font-weight:700}
@@ -172,7 +173,7 @@ input[type=text]{padding:8px;border:1px solid #cfd4dc;border-radius:8px;width:10
 
   <div class="card">
     <h2>📅 Lịch thi đấu</h2>
-    <div class="small muted">Có <b>18 lượt</b> · mỗi trận tính là một lượt. Nhập điểm hai đội rồi bấm Lưu kết quả, hoặc bấm icon <b>🎯</b> để ghi điểm nhanh cho trọng tài.</div>
+    <div class="small muted">Có <b>18 lượt</b> · mỗi trận tính là một lượt. Nhập điểm hai đội rồi bấm Lưu kết quả, hoặc bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
     <div id="schedule"></div>
   </div>
 </div>
@@ -530,7 +531,7 @@ function renderSchedule(){
       }
     }
     html+=`<div class="card" ${cardStyle}>
-      <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
+      <div class="round-title"><h3><span class="rnum">${n}</span><b style="color:var(--${a.toLowerCase()})">${a}</b><span class="vs">vs</span><b style="color:var(--${b.toLowerCase()})">${b}</b></h3><span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh cho trọng tài">🎯</a></span></div>
       <div class="teams"><div class="side">${pa}</div><div class="${resCls}">${resTxt}</div><div class="side right">${pb}</div></div>
     </div>`;
   });
@@ -798,6 +799,7 @@ function setupWinLimitInput(){
   setupWinLimitInput();
   applySponsorState();
   if(window.location.search.includes("admin=den"))document.body.classList.add("admin");
+  if(window.location.search.includes("ref=den"))document.body.classList.add("ref");
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
       const d=snap.val();
