@@ -214,7 +214,13 @@ body.dark .champ{background:#052e16;color:#86efac}
   </div>
 
   <div class="card">
-    <h2>📅 Lịch vòng bảng</h2>
+    <div class="gtitle">
+      <h2 style="margin:0">📅 Lịch vòng bảng</h2>
+      <span class="head-right">
+        <button class="sm-btn admin-needed" onclick="simulateAllScores()" title="Sinh tỉ số ngẫu nhiên cho toàn bộ cặp đấu (dùng để xem thử/demo)">🎲 Giả lập tỉ số</button>
+        <button class="sm-btn hid admin-needed" onclick="requestReset()" title="Xoá toàn bộ điểm giả lập">🗑️ Xoá</button>
+      </span>
+    </div>
     <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
     <div id="schedule"></div>
   </div>
@@ -318,6 +324,37 @@ function slotList(){
   }
   return out;
 }
+/* ===== Giả lập tỉ số toàn bộ trận (admin, dùng để xem thử/demo) ===== */
+function randScore(limit){
+  // bên thắng đạt đúng mốc, bên thua ngẫu nhiên từ limit-1 xuống limit-9 (>=0)
+  const gap=1+Math.floor(Math.random()*9);
+  return Math.max(0,limit-gap);
+}
+function simPair(id,limit){
+  const winA=Math.random()<0.5;
+  const w=limit, l=randScore(limit);
+  const v={a:winA?w:l,b:winA?l:w,done:true,t:Date.now()};
+  results[id]=v;writeResult(id,v);
+  return v;
+}
+function simulateAllScores(){
+  if(!groups.g1.length||!groups.g2.length){setStatus("Chưa có bảng đấu để giả lập.");return}
+  const gl=Number(settings.winLimit)||21, kl=Number(settings.koWinLimit)||gl;
+  let n=0;
+  // 1) Vòng bảng: 6 trận đội × 3 cặp = 18 cặp
+  for(const m of groupMatches()){
+    for(let p=0;p<3;p++){simPair(m.id+"-p"+p,gl);n++}
+  }
+  renderAll();
+  syncFinalSig();
+  // 2) Chung kết + tranh ba tư (sau khi vòng bảng đã xong sẽ tự xuất hiện)
+  let k=0;
+  for(const m of knockoutMatches()){simPair(m.id,kl);k++}
+  renderAll();
+  if(remoteDB)remoteDB.ref(RDB+"/settings").set(settings).catch(()=>{});
+  setStatus("🎲 Đã giả lập tỉ số: "+n+" cặp vòng bảng"+(k?(" + "+k+" cặp chung kết/tranh ba tư"):"")+".");
+}
+
 function standings(g){
   const list=(groups[g]||[]).map(t=>({team:t,w:0,l:0,pf:0,pa:0,pairsDone:0,matchesPlayed:0}));
   const byTeam={};list.forEach(x=>byTeam[x.team]=x);
