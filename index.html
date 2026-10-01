@@ -184,8 +184,11 @@ body.dark .champ{background:#052e16;color:#86efac}
   </div>
 
   <div class="card">
-    <h2>🏆 Vòng bảng</h2>
-    <div class="small muted" style="margin-bottom:10px">Xếp hạng theo <b>tổng điểm số</b> · nhất mỗi bảng vào chung kết.</div>
+    <div class="gtitle">
+      <h2 style="margin:0">🏆 Vòng bảng</h2>
+      <button class="sm-btn admin-needed" onclick="randomizeOrder()" title="Đảo ngẫu nhiên thứ tự các trận thi đấu">🔀 Random thứ tự</button>
+    </div>
+    <div class="small muted" style="margin-bottom:10px">Xếp hạng theo <b>tổng điểm số</b> · nhất mỗi bảng vào chung kết. Bấm <b>🔀 Random thứ tự</b> để đổi ngẫu nhiên thứ tự các trận trong 2 bảng (không mất điểm).</div>
     <div class="grid2" id="standings"></div>
   </div>
 
@@ -255,6 +258,10 @@ function redrawGroups(){
   groups={g1:s.slice(0,3).sort(),g2:s.slice(3).sort()};
   results={};
   settings.finalSig="";
+  settings.ord1=shuffle(baseList("g1").map(m=>m.id));
+  settings.ord2=shuffle(baseList("g2").map(m=>m.id));
+  settings.first=Math.random()<0.5?"g1":"g2";
+  settings.ordTs=Date.now();
 }
 function generateSchedule(){
   redrawGroups();
@@ -265,24 +272,41 @@ function generateSchedule(){
   renderAll();
 }
 /* ===== Danh sách trận ===== */
+function baseList(g){
+  const t=groups[g];
+  if(!t||t.length<3)return [];
+  return [
+    {id:g+"-m0",group:g,a:t[0],b:t[1]},
+    {id:g+"-m1",group:g,a:t[0],b:t[2]},
+    {id:g+"-m2",group:g,a:t[1],b:t[2]}
+  ];
+}
+function applyOrd(list,ord){
+  if(!Array.isArray(ord)||!ord.length)return list;
+  const by={};list.forEach(m=>by[m.id]=m);
+  const out=[];
+  ord.forEach(id=>{if(by[id]){out.push(by[id]);delete by[id]}});
+  list.forEach(m=>{if(by[m.id])out.push(m)});
+  return out;
+}
 function groupMatches(){
-  const ms=[];
-  const order=[];
-  for(const g of ["g1","g2"]){
-    const t=groups[g];
-    if(!t||t.length<3)continue;
-    order.push([g+"-m0",g,t[0],t[1]]);
-    order.push([g+"-m1",g,t[0],t[2]]);
-    order.push([g+"-m2",g,t[1],t[2]]);
-  }
-  // xen kẽ 2 bảng để mỗi đội được nghỉ
-  const G={};order.forEach(o=>{(G[o[1]]=G[o[1]]||[]).push(o)});
-  const maxLen=Math.max(G.g1?G.g1.length:0,G.g2?G.g2.length:0);
-  for(let i=0;i<maxLen;i++){
-    if(G.g1&&G.g1[i])ms.push({id:G.g1[i][0],group:G.g1[i][1],a:G.g1[i][2],b:G.g1[i][3]});
-    if(G.g2&&G.g2[i])ms.push({id:G.g2[i][0],group:G.g2[i][1],a:G.g2[i][2],b:G.g2[i][3]});
-  }
+  const l1=applyOrd(baseList("g1"),settings.ord1);
+  const l2=applyOrd(baseList("g2"),settings.ord2);
+  const first=settings.first==="g2"?"g2":"g1";
+  const A=first==="g1"?l1:l2, B=first==="g1"?l2:l1;
+  const ms=[],maxLen=Math.max(A.length,B.length);
+  for(let i=0;i<maxLen;i++){if(A[i])ms.push(A[i]);if(B[i])ms.push(B[i])}
   return ms;
+}
+/* Random thứ tự các trận vòng bảng (giữ nguyên điểm) */
+function randomizeOrder(){
+  settings.ord1=shuffle(baseList("g1").map(m=>m.id));
+  settings.ord2=shuffle(baseList("g2").map(m=>m.id));
+  settings.first=Math.random()<0.5?"g1":"g2";
+  settings.ordTs=Date.now();
+  if(remoteDB)remoteDB.ref(RDB+"/settings").set(settings).catch(()=>{});
+  renderAll();
+  setStatus("Đã random thứ tự trận: "+groupMatches().map((m,i)=>(i+1)+". "+m.a+"–"+m.b).join(" · "));
 }
 function standings(g){
   const list=(groups[g]||[]).map(t=>({team:t,w:0,l:0,pf:0,pa:0}));
@@ -758,6 +782,10 @@ function applyRemoteData(v){
     settings.winLimit=(Number(s.winLimit)>=2&&Number(s.winLimit)<=99)?Number(s.winLimit):21;
     settings.ver=3;
     settings.finalSig=typeof s.finalSig==="string"?s.finalSig:"";
+    settings.ord1=Array.isArray(s.ord1)?s.ord1:[];
+    settings.ord2=Array.isArray(s.ord2)?s.ord2:[];
+    settings.first=(s.first==="g2")?"g2":"g1";
+    settings.ordTs=Number(s.ordTs)||0;
   }
   syncOpenModalFromRemote();
   const wl=document.getElementById("winLimit");if(wl)wl.value=settings.winLimit;
