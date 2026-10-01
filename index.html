@@ -27,7 +27,7 @@ button.secondary{background:#475467}button.danger{background:#b42318}button.gree
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
 body:not(.admin) .admin-needed{display:none!important}
-body:not(.ref):not(.admin) .ref-only{display:none!important}
+
 .small{font-size:12px}.muted{color:var(--muted)}.hidden{display:none}
 /* nhà tài trợ */
 .sponsors{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
@@ -244,7 +244,7 @@ body.dark .champ{background:#052e16;color:#86efac}
         <button class="sm-btn hid admin-needed" onclick="requestReset()" title="Xoá toàn bộ điểm giả lập">🗑️ Xoá</button>
       </span>
     </div>
-    <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
+    <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> để ghi điểm nhanh cho trọng tài.</div>
     <div id="schedule"></div>
   </div>
 </div>
@@ -558,7 +558,7 @@ function gameRow(m,p){
     <div class="gline1">
       <span class="posbadge">${PAIRLABEL[p]}</span>
       <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
-      <span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+      <span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
     </div>
     <div class="gline2">
       <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
@@ -631,7 +631,7 @@ function koCard(m,label,tag){
   return `<div class="card mcard" style="border-left-color:${cA}">
     <div class="round-title">
       <h3><span class="rnum" style="background:${tag==="CK"?"#b45309":"#0891b2"}">${tag}</span><b style="color:${cA}">${m.a}</b><span class="vs">vs</span><b style="color:${cB}">${m.b}</b></h3>
-      <span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+      <span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
     </div>
     <div class="games">
       <div class="game-row">
@@ -1075,7 +1075,6 @@ function setupWinLimitInput(){
   applyDarkState();
   const p=new URLSearchParams(window.location.search);
   if(p.has("admin"))document.body.classList.add("admin");
-  if(p.has("ref"))document.body.classList.add("ref");
   if(remoteDB){
     remoteDB.ref(RDB).get().then(snap=>{
       const d=snap.val();
