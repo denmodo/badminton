@@ -522,17 +522,14 @@ function renderStandings(){
   const el=document.getElementById("standings");if(!el)return;
   el.innerHTML=["g1","g2"].map(g=>{
     const st=standings(g),dec=groupDecided(g);
-    let rows=st.map((x,i)=>{
-      const lead=dec&&i===0;
-      return `<tr>
+    let rows=st.map((x,i)=>`<tr>
         <td>${i+1}</td>
-        <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${x.team}</span> ${lead?'<span class="qualify">✔ vào CK</span>':''}</td>
+        <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${x.team}</span></td>
         <td><b>${x.mWin}</b>/${x.mPlayed}</td>
         <td>${x.w}/${x.games}</td>
         <td>${x.pf}</td>
         <td>${x.diff>=0?"+":""}${x.diff}</td>
-      </tr>`;
-    }).join("");
+      </tr>`).join("");
     if(!st.length)rows='<tr><td colspan="6" class="muted">Đang tải…</td></tr>';
     return `<div>
       <div class="gtitle"><h3 style="color:${gColor(g)}">${gName(g)}</h3>${dec?'<span class="qualify">Đã xong vòng bảng</span>':''}</div>
