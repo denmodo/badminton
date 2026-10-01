@@ -205,7 +205,7 @@ body.dark .champ{background:#052e16;color:#86efac}
 
   <div class="card">
     <h2>📅 Lịch vòng bảng</h2>
-    <div class="small muted" style="margin-bottom:8px">Chia thành <b>3 lượt</b> — mỗi lượt Bảng 1 đá <b>sân 1</b> và Bảng 2 đá <b>sân 2</b> cùng lúc, mỗi bảng có 1 đội <b>nghỉ</b> (mỗi đội nghỉ đúng 1 lượt, đá đúng 2 trận = 6 cặp). Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
+    <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
     <div id="schedule"></div>
   </div>
 </div>
@@ -288,21 +288,21 @@ function groupMatches(){
   for(let i=0;i<maxLen;i++){if(l1[i])ms.push(l1[i]);if(l2[i])ms.push(l2[i])}
   return ms;
 }
-/* Chia lịch thành các LƯỢT: mỗi lượt Bảng 1 đá sân 1 + Bảng 2 đá sân 2 → mỗi lượt 1 đội/bảng được nghỉ.
-   Trong 1 bảng có 3 đội, mỗi đội đá 2/3 lượt nên mỗi đội nghỉ đúng 1 lượt. */
-function scheduleRounds(){
-  const l1=baseList("g1"),l2=baseList("g2");
-  const rounds=[],maxLen=Math.max(l1.length,l2.length);
-  for(let i=0;i<maxLen;i++)rounds.push({n:i+1,m1:l1[i]||null,m2:l2[i]||null});
-  return rounds;
+/* ===== Rải 18 cặp thành 9 LƯỢT (mỗi lượt 2 sân song song: 1 cặp Bảng 1 + 1 cặp Bảng 2) =====
+   Nhờ vậy KHÔNG đội nào đánh 3 cặp liên tiếp: mỗi đội đá 6 cặp / 9 lượt (nghỉ 3 lượt),
+   mỗi người đá 4 cặp và chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. */
+const REST_TO_M=[2,1,0]; // đội nghỉ index: 0→trận m2 (t1-t2), 1→m1 (t0-t2), 2→m0 (t0-t1)
+function slotItem(g,restIdx,pair){
+  const t=groups[g];
+  if(!t||t.length<3)return null;
+  const m=REST_TO_M[restIdx], full=baseList(g)[m];
+  return {group:g,matchIdx:m,id:full.id,a:full.a,b:full.b,pair:pair,rest:t[restIdx]};
 }
-function roundRest(rd){
-  const out={};
-  for(const gk of ["g1","g2"]){
-    const m=gk==="g1"?rd.m1:rd.m2;
-    if(!m){out[gk]="—";continue}
-    const playing=new Set([m.a,m.b]);
-    out[gk]=(groups[gk]||[]).find(t=>!playing.has(t))||"—";
+function slotList(){
+  const out=[];
+  for(let s=0;s<9;s++){
+    const cycle=Math.floor(s/3), r=s%3;
+    out.push({n:s+1,items:[slotItem("g1",r,cycle),slotItem("g2",(r+1)%3,cycle)]});
   }
   return out;
 }
@@ -454,20 +454,33 @@ function matchCard(m,label){
     <div class="games">${rows}</div>
   </div>`;
 }
+function pairCard(it,court){
+  const cA=COLOR[it.a]||"#666",cB=COLOR[it.b]||"#666";
+  const id=it.id+"-p"+it.pair;
+  const v=results[id]||{};
+  const done=(v.done===true);
+  return `<div class="card mcard" style="border-left-color:${cA};margin:0">
+    <div class="round-title">
+      <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${it.a}</b><span class="vs">vs</span><b style="color:${cB}">${it.b}</b></h3>
+      <span class="head-right small muted">${done?"Đã xong":""}</span>
+    </div>
+    <div class="games">${gameRow({id:it.id,a:it.a,b:it.b},it.pair)}</div>
+  </div>`;
+}
 function renderSchedule(){
   const el=document.getElementById("schedule");if(!el)return;
-  const rounds=scheduleRounds();
-  if(!rounds.length){el.innerHTML='<div class="muted">Đang tải…</div>';return}
-  el.innerHTML=rounds.map(rd=>{
-    const r=roundRest(rd);
+  const slots=slotList();
+  if(!groups.g1.length||!slots.length){el.innerHTML='<div class="muted">Đang tải…</div>';return}
+  el.innerHTML=slots.map(sl=>{
+    const rests={};sl.items.forEach(it=>{if(it)rests[it.group]=it.rest});
     return `<div class="round-block">
       <div class="round-head">
-        <span class="rnum">LƯỢT ${rd.n}</span>
-        <span class="rest-note">Nghỉ — ${gName("g1")}: <b>${r.g1}</b> · ${gName("g2")}: <b>${r.g2}</b></span>
+        <span class="rnum">LƯỢT ${sl.n}</span>
+        <span class="rest-note">Nghỉ — ${gName("g1")}: <b>${rests.g1||"—"}</b> · ${gName("g2")}: <b>${rests.g2||"—"}</b></span>
       </div>
       <div class="grid2">
-        ${rd.m1?matchCard(rd.m1,"SÂN 1"):""}
-        ${rd.m2?matchCard(rd.m2,"SÂN 2"):""}
+        ${sl.items[0]?pairCard(sl.items[0],"SÂN 1"):""}
+        ${sl.items[1]?pairCard(sl.items[1],"SÂN 2"):""}
       </div>
     </div>`;
   }).join("");
