@@ -72,6 +72,10 @@ th{font-size:12px;color:var(--muted);background:var(--soft);white-space:nowrap}
 .rest-note{font-size:12px;color:var(--muted)}
 .rest-note b{color:var(--warn)}
 .qualify{color:var(--ok);font-weight:900;font-size:12px}
+.ko-picks{display:flex;flex-direction:column;gap:6px;margin:6px 0 8px}
+.ko-pick{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--muted);border-left:3px solid var(--line);padding:2px 0 2px 7px}
+.psel{flex:1;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--text);font-family:inherit;font-size:13px;font-weight:700}
+.psel-static{font-size:13px;font-weight:700;color:var(--text)}
 .champ{font-size:22px;font-weight:900;text-align:center;padding:16px;border-radius:14px;background:#ecfdf3;color:#166534;margin-bottom:10px}
 body.dark .champ{background:#052e16;color:#86efac}
 /* trận đấu */
@@ -203,6 +207,11 @@ body.dark .champ{background:#052e16;color:#86efac}
     <div id="finalBox"></div>
   </div>
 
+  <div class="card" id="bronzeCard">
+    <h2>🥉 Tranh giải ba tư</h2>
+    <div id="bronzeBox"></div>
+  </div>
+
   <div class="card">
     <h2>📅 Lịch vòng bảng</h2>
     <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
@@ -232,7 +241,7 @@ const PAIRLABEL=["Cặp 1","Cặp 2","Cặp 3"];
 const pairNames=(t,p)=>PAIRDEF[p].map(i=>TEAMS[t][i]);
 const pairText=(t,p)=>PAIRDEF[p].map(i=>pname(TEAMS[t][i])).join(" + ");
 
-let groups={g1:[],g2:[]}, results={}, settings={winLimit:21,ver:3,finalSig:""};
+let groups={g1:[],g2:[]}, results={}, settings={winLimit:21,ver:3,finalSig:"",finalPair:[0,0],bronzePair:[0,0]};
 
 /* ===== Firebase (nguồn dữ liệu duy nhất) ===== */
 const FIREBASE_CONFIG={apiKey:"AIzaSyAq9N2fkROcpKFcobgd2PFLvckljSkKaNY",databaseURL:"https://youcanseefuture.firebaseio.com",projectId:"youcanseefuture",authDomain:"youcanseefuture.firebaseapp.com",storageBucket:"youcanseefuture.firebasestorage.app",messagingSenderId:"456240353181",appId:"1:456240353181:web:c1e9fd6ccb3e4145302974"};
@@ -334,42 +343,62 @@ function groupDecided(g){
   for(const m of groupMatches()){if(m.group!==g)continue;for(let p=0;p<3;p++){need++;const v=results[m.id+"-p"+p];if(v&&v.done===true)have++;}}
   return need>0&&have===need;
 }
-function finalTeams(){
-  if(!groups.g1.length||!groups.g2.length)return {a:null,b:null};
-  if(!groupDecided("g1")||!groupDecided("g2"))return {a:null,b:null};
-  return {a:standings("g1")[0].team,b:standings("g2")[0].team};
+function groupsDecided(){return groupDecided("g1")&&groupDecided("g2");}
+function koTeam(g,rank){
+  if(!groups.g1.length||!groups.g2.length)return null;
+  if(!groupsDecided())return null;
+  const st=standings(g);
+  return st[rank]?st[rank].team:null;
 }
-function finalWinner(){
-  const f=finalTeams();if(!f.a||!f.b)return null;
-  let wa=0,wb=0,pfa=0,pfb=0,done=0;
-  for(let p=0;p<3;p++){
-    const v=results["final-p"+p];
-    if(v&&v.done===true&&v.a!==null&&v.a!==""&&v.b!==null&&v.b!==""){done++;const sa=+v.a,sb=+v.b;pfa+=sa;pfb+=sb;if(sa>sb)wa++;else if(sb>sa)wb++}
-  }
-  if(wa>=2)return {team:f.a,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-  if(wb>=2)return {team:f.b,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-  if(done===3){
-    if(wa>wb)return {team:f.a,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-    if(wb>wa)return {team:f.b,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-    if(pfa>pfb)return {team:f.a,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-    if(pfb>pfa)return {team:f.b,wa:wa,wb:wb,pfa:pfa,pfb:pfb,done:done};
-  }
-  return null;
+function finalTeams(){return {a:koTeam("g1",0),b:koTeam("g2",0)};}
+function bronzeTeams(){return {a:koTeam("g1",1),b:koTeam("g2",1)};}
+function koPairIdx(which,side){
+  const arr=which==="bronze"?settings.bronzePair:settings.finalPair;
+  const v=Array.isArray(arr)?arr[side==="a"?0:1]:0;
+  return (v>=0&&v<=2)?v:0;
 }
-function allMatches(){
-  const ms=groupMatches();
+function koPairSet(which,side,idx){
+  const key=which==="bronze"?"bronzePair":"finalPair";
+  const cur=Array.isArray(settings[key])?settings[key].slice():[0,0];
+  cur[side==="a"?0:1]=idx;
+  settings[key]=cur;
+  if(remoteDB)remoteDB.ref(RDB+"/settings/"+key).set(cur).catch(()=>{});
+  // đổi cặp đấu = đổi người → xoá điểm của trận đó
+  delete results[which];removeResult(which);
+  renderAll();
+}
+function knockoutMatches(){
+  const ms=[];
   const f=finalTeams();
-  if(f.a&&f.b)ms.push({id:"final",group:"final",a:f.a,b:f.b});
+  if(f.a&&f.b)ms.push({id:"final",group:"final",a:f.a,b:f.b,pairA:koPairIdx("final","a"),pairB:koPairIdx("final","b")});
+  const br=bronzeTeams();
+  if(br.a&&br.b)ms.push({id:"bronze",group:"bronze",a:br.a,b:br.b,pairA:koPairIdx("bronze","a"),pairB:koPairIdx("bronze","b")});
   return ms;
 }
+function koWinner(id){
+  const m=knockoutMatches().find(x=>x.id===id);
+  if(!m)return null;
+  const v=results[id];
+  if(!v||v.done!==true||v.a===""||v.b===""||v.a==null||v.b==null)return null;
+  const sa=+v.a,sb=+v.b;
+  if(sa===sb)return null;
+  return {team:sa>sb?m.a:m.b,sa:sa,sb:sb,loser:sa>sb?m.b:m.a};
+}
+function finalWinner(){return koWinner("final");}
+function bronzeWinner(){return koWinner("bronze");}
+function allMatches(){
+  return groupMatches().concat(knockoutMatches());
+}
 function findMatch(id){return allMatches().find(m=>m.id===id)}
-const gamePos=id=>Number(String(id).split("-p")[1]);
+const gamePos=id=>{const n=Number(String(id).split("-p")[1]);return isNaN(n)?0:n};
 const matchKey=id=>String(id).split("-p")[0];
+const isKO=id=>id==="final"||id==="bronze";
 function syncFinalSig(){
-  const f=finalTeams();
-  const sig=(f.a||"-")+"|"+(f.b||"-");
+  const f=finalTeams(),b=bronzeTeams();
+  const sig=[f.a||"-",f.b||"-",b.a||"-",b.b||"-",koPairIdx("final","a"),koPairIdx("final","b"),koPairIdx("bronze","a"),koPairIdx("bronze","b")].join("|");
   if(settings.finalSig!==sig){
     settings.finalSig=sig;
+    for(const k of ["final","bronze"]){if(results[k]){delete results[k];removeResult(k)}}
     for(let p=0;p<3;p++){const k="final-p"+p;if(results[k]){delete results[k];removeResult(k)}}
     if(remoteDB)remoteDB.ref(RDB+"/settings/finalSig").set(sig).catch(()=>{});
   }
@@ -485,24 +514,82 @@ function renderSchedule(){
     </div>`;
   }).join("");
 }
+/* ===== Chung kết / Tranh giải ba tư: mỗi trận CHỈ 1 CẶP, tự chọn cặp ===== */
+function pairSelect(which,side,idx,team){
+  return `<select class="psel ref-only" onchange="koPairSet('${which}','${side}',Number(this.value))">
+    ${[0,1,2].map(i=>`<option value="${i}"${i===idx?" selected":""}>${PAIRLABEL[i]} — ${pairText(team,i)}</option>`).join("")}
+  </select>`;
+}
+function pairSelectText(which,side,idx,team){
+  return `<span class="psel-static">${PAIRLABEL[idx]} — ${pairText(team,idx)}</span>`;
+}
+function koCard(m,label,tag){
+  const cA=COLOR[m.a]||"#666",cB=COLOR[m.b]||"#666";
+  const id=m.id;
+  const v=results[id]||{};
+  const has=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
+  const done=has&&v.done===true;
+  let sa="–",sb="–",ca="gscore",cb="gscore";
+  if(has){
+    const x=Number(v.a),y=Number(v.b);
+    sa=v.a;sb=v.b;
+    if(done){if(x>y)cb+=" lose";else if(y>x)ca+=" lose"}
+    else{ca+=" live";cb+=" live"}
+  }
+  const mark=done?'<span class="saved-mark">✓</span>':(has?'<span class="saved-mark live">●</span>':"");
+  const win=koWinner(id);
+  return `<div class="card mcard" style="border-left-color:${cA}">
+    <div class="round-title">
+      <h3><span class="rnum" style="background:${tag==="VÔ ĐỊCH"?"#b45309":"#0891b2"}">${tag}</span><b style="color:${cA}">${m.a}</b><span class="vs">vs</span><b style="color:${cB}">${m.b}</b></h3>
+      <span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+    </div>
+    <div class="ko-picks">
+      <span class="ko-pick" style="border-color:${cA}">Đội ${m.a}: ${pairSelect(id,"a",m.pairA,m.a)}</span>
+      <span class="ko-pick" style="border-color:${cB}">Đội ${m.b}: ${pairSelect(id,"b",m.pairB,m.b)}</span>
+    </div>
+    <div class="games">
+      <div class="game-row">
+        <div class="gline1">
+          <span class="posbadge">${PAIRLABEL[m.pairA]}</span>
+          <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
+          <span class="head-right"></span>
+        </div>
+        <div class="gline2">
+          <span class="pairname" style="color:${cA}">${pairText(m.a,m.pairA)}</span>
+          <span class="gdash">vs</span>
+          <span class="pairname r" style="color:${cB}">${pairText(m.b,m.pairB)}</span>
+        </div>
+      </div>
+    </div>
+    ${win?`<div class="qualify" style="margin-top:6px;display:block;text-align:center">🎉 Đội ${win.team} thắng (${win.sa} - ${win.sb})</div>`:""}
+  </div>`;
+}
 function renderFinal(){
   const box=document.getElementById("finalBox");if(!box)return;
-  const f=finalTeams();
-  if(!f.a||!f.b){
-    box.innerHTML='<div class="muted small">Đang chờ kết quả vòng bảng — khi mỗi bảng đấu xong 3 trận (9 cặp), đội nhất mỗi bảng sẽ vào chung kết.</div>';
+  if(!groupsDecided()){
+    box.innerHTML='<div class="muted small">Đang chờ kết quả vòng bảng — khi mỗi bảng đấu xong 6 cặp, đội nhất mỗi bảng vào chung kết và đội nhì vào tranh giải ba.</div>';
     return;
   }
   const w=finalWinner();
+  const bw=bronzeWinner();
   let head="";
-  if(w){
-    head=`<div class="champ">🏆 ĐỘI VÔ ĐỊCH: ĐỘI ${w.team}</div>`;
+  if(w)head+=`<div class="champ">🏆 ĐỘI VÔ ĐỊCH: ĐỘI ${w.team}</div>`;
+  if(bw)head+=`<div class="champ" style="background:#e0f2fe;color:#075985">🥉 GIẢI BA: ĐỘI ${bw.team}</div>`;
+  const fm=knockoutMatches().find(x=>x.id==="final");
+  box.innerHTML=head+(fm?koCard(fm,"CK","CK"):'<div class="muted small">Chưa xác định được 2 đội vào chung kết.</div>');
+}
+function renderBronze(){
+  const box=document.getElementById("bronzeBox");if(!box)return;
+  if(!groupsDecided()){
+    box.innerHTML='<div class="muted small">Đang chờ kết quả vòng bảng — đội nhì bảng 1 sẽ gặp đội nhì bảng 2.</div>';
+    return;
   }
-  const m={id:"final",group:"final",a:f.a,b:f.b};
-  box.innerHTML=head+matchCard(m,"CK");
+  const m=knockoutMatches().find(x=>x.id==="bronze");
+  box.innerHTML=m?koCard(m,"bronze","TRANH GIẢI BA"):'<div class="muted small">Chưa xác định được 2 đội tranh giải ba.</div>';
 }
 function renderAll(){
   syncFinalSig();
-  renderTeams();renderStandings();renderFinal();renderSchedule();
+  renderTeams();renderStandings();renderFinal();renderBronze();renderSchedule();
 }
 /* ===== Ghi điểm (modal) ===== */
 let scoreUI=null,lastTap={a:0,b:0},speechOn=true;
@@ -543,11 +630,15 @@ function toggleVoice(){
 }
 function openScoreModal(gameId){
   if(scoreUI)closeScoreModal();
-  const m=findMatch(matchKey(gameId));
+  const key=matchKey(gameId);
+  const m=findMatch(key);
   if(!m)return;
-  const p=gamePos(gameId);
-  const aPair=pairNames(m.a,p), bPair=pairNames(m.b,p);
-  const aText=pairText(m.a,p), bText=pairText(m.b,p);
+  const ko=isKO(key);
+  const pA=ko?m.pairA:gamePos(gameId);
+  const pB=ko?m.pairB:gamePos(gameId);
+  const aPair=pairNames(m.a,pA), bPair=pairNames(m.b,pB);
+  const aText=pairText(m.a,pA), bText=pairText(m.b,pB);
+  const headLabel=ko?(key==="final"?"🏆 CHUNG KẾT":"🥉 TRANH GIẢI BA"):PAIRLABEL[pA];
   const cA=COLOR[m.a],cB=COLOR[m.b];
   const cur=results[gameId]||{};
   const va=(cur.a!==""&&cur.a!=null)?Number(cur.a):0;
@@ -557,7 +648,7 @@ function openScoreModal(gameId){
   ov.innerHTML=`
     <div class="modal">
       <div class="modal-head" style="background:linear-gradient(135deg,${cA},${cB})">
-        <div class="modal-title">🎯 Ghi điểm · ${PAIRLABEL[p]}</div>
+        <div class="modal-title">🎯 Ghi điểm · ${headLabel}</div>
         <span class="head-right"><button class="voice-toggle" onclick="toggleVoice()" title="Bật/tắt đọc tỉ số">${speechOn?"🔊":"🔇"}</button><button onclick="closeScoreModal()">✕</button></span>
       </div>
       <div class="modal-hint">🏁 Chạm ${settings.winLimit} điểm là thắng cặp đôi này · bấm vào bên để cộng điểm · nút - khi bấm nhầm</div>
@@ -571,14 +662,14 @@ function openScoreModal(gameId){
       <div class="panels">
         <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('a')">-</button>
-          <div class="lab">Đội ${m.a} · ${PAIRLABEL[p]}</div>
+          <div class="lab">Đội ${m.a} · ${PAIRLABEL[pA]}</div>
           <div class="pnames">${aText}</div>
           <div class="bigscore" id="scoreA">${va}</div>
           <span class="tap-add">+</span>
         </div>
         <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('b')">-</button>
-          <div class="lab">Đội ${m.b} · ${PAIRLABEL[p]}</div>
+          <div class="lab">Đội ${m.b} · ${PAIRLABEL[pB]}</div>
           <div class="pnames">${bText}</div>
           <div class="bigscore" id="scoreB">${vb}</div>
           <span class="tap-add">+</span>
@@ -810,6 +901,9 @@ function applyRemoteData(v){
     settings.winLimit=(Number(s.winLimit)>=2&&Number(s.winLimit)<=99)?Number(s.winLimit):21;
     settings.ver=3;
     settings.finalSig=typeof s.finalSig==="string"?s.finalSig:"";
+    const norm=v=>{const a=Array.isArray(v)?v:[0,0];return [Number(a[0])||0,Number(a[1])||0].map(x=>(x>=0&&x<=2)?x:0)};
+    settings.finalPair=norm(s.finalPair);
+    settings.bronzePair=norm(s.bronzePair);
   }
   syncOpenModalFromRemote();
   const wl=document.getElementById("winLimit");if(wl)wl.value=settings.winLimit;
