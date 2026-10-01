@@ -108,7 +108,8 @@ body.dark .champ{background:#052e16;color:#86efac}
 .games{display:flex;flex-direction:column;gap:2px}
 .game-row{display:flex;flex-direction:column;gap:3px;padding:8px 4px;border-bottom:1px dashed var(--line)}
 .game-row:last-child{border-bottom:0}
-.gline1{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+.gline1{display:flex;align-items:center;justify-content:center;position:relative;min-height:26px;gap:8px}
+.gline1 .head-right{position:absolute;right:0;top:50%;transform:translateY(-50%)}
 .gscorewrap{display:flex;align-items:baseline;justify-content:center;gap:7px}
 .gline2{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .pairname{font-weight:700;font-size:13px;min-width:0;overflow-wrap:anywhere}
@@ -556,13 +557,11 @@ function gameRow(m,p){
   const mark=done?'<span class="saved-mark">✓</span>':(has?'<span class="saved-mark live">●</span>':"");
   return `<div class="game-row">
     <div class="gline1">
-      <span class="posbadge">${PAIRLABEL[p]}</span>
       <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
       <span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
     </div>
     <div class="gline2">
       <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
-      <span class="gdash">vs</span>
       <span class="pairname r" style="color:${cB}">${pairText(m.b,p)}</span>
     </div>
   </div>`;
@@ -587,7 +586,7 @@ function pairCard(it,court){
   const done=(v.done===true);
   return `<div class="card mcard" style="border-left-color:${cA};margin:0">
     <div class="round-title">
-      <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${it.a}</b><span class="vs">vs</span><b style="color:${cB}">${it.b}</b></h3>
+      <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${it.a}</b><span class="gdash">–</span><b style="color:${cB}">${it.b}</b></h3>
       <span class="head-right small muted">${done?"Đã xong":""}</span>
     </div>
     <div class="games">${gameRow({id:it.id,a:it.a,b:it.b},it.pair)}</div>
