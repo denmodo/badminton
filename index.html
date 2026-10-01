@@ -245,8 +245,7 @@ function pushAllToCloud(){if(!remoteDB)return;remoteDB.ref(RDB).set({groups:grou
 
 /* ===== Tiện ích ===== */
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-const SPONSOR_STAR=["Tân","Hiếu"];
-function pname(n){return SPONSOR_STAR.some(s=>String(n).includes(s))?n+"⭐":n}
+function pname(n){return n}
 function teamGroup(t){if(groups.g1.includes(t))return "g1";if(groups.g2.includes(t))return "g2";return null}
 function gName(g){return g==="g1"?"Bảng 1":(g==="g2"?"Bảng 2":"Chung kết")}
 function gColor(g){return g==="g1"?"#2563eb":"#ea580c"}
