@@ -404,23 +404,19 @@ function simulateAllScores(){
 }
 
 function standings(g){
-  const list=(groups[g]||[]).map(t=>({team:t,w:0,l:0,pf:0,pa:0,pairsDone:0,matchesPlayed:0}));
+  const list=(groups[g]||[]).map(t=>({team:t,w:0,l:0,pf:0,pa:0,pairsDone:0}));
   const byTeam={};list.forEach(x=>byTeam[x.team]=x);
   for(const m of groupMatches()){
     if(m.group!==g)continue;
-    let mp=0,ma=0,mb=0;
     for(let p=0;p<3;p++){
       const v=results[m.id+"-p"+p];
       if(!v||v.done!==true||v.a===""||v.b===""||v.a==null||v.b==null)continue;
       const sa=Number(v.a),sb=Number(v.b);
       byTeam[m.a].pf+=sa;byTeam[m.a].pa+=sb;byTeam[m.b].pf+=sb;byTeam[m.b].pa+=sa;
       byTeam[m.a].pairsDone++;byTeam[m.b].pairsDone++;
-      ma++;mb++;
       if(sa>sb){byTeam[m.a].w++;byTeam[m.b].l++}
       else if(sb>sa){byTeam[m.b].w++;byTeam[m.a].l++}
     }
-    if(ma===3)byTeam[m.a].matchesPlayed++;
-    if(mb===3)byTeam[m.b].matchesPlayed++;
   }
   list.forEach(x=>{x.diff=x.pf-x.pa;x.games=x.w+x.l});
   list.sort((x,y)=>y.pf-x.pf||y.diff-x.diff||y.w-x.w);
@@ -523,17 +519,16 @@ function renderStandings(){
       return `<tr>
         <td>${i+1}</td>
         <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${x.team}</span> ${lead?'<span class="qualify">✔ vào CK</span>':''}</td>
-        <td>${x.matchesPlayed}/2</td>
         <td>${x.w}/${x.games}</td>
         <td><b>${x.pf}</b></td>
         <td>${x.diff>=0?"+":""}${x.diff}</td>
       </tr>`;
     }).join("");
-    if(!st.length)rows='<tr><td colspan="6" class="muted">Đang tải…</td></tr>';
+    if(!st.length)rows='<tr><td colspan="5" class="muted">Đang tải…</td></tr>';
     return `<div>
       <div class="gtitle"><h3 style="color:${gColor(g)}">${gName(g)}</h3>${dec?'<span class="qualify">Đã xong vòng bảng</span>':''}</div>
       <div class="tbl-wrap"><table>
-        <tr><th>Hạng</th><th>Đội</th><th>Trận</th><th>Thắng cặp</th><th>Điểm</th><th>Hiệu số</th></tr>
+        <tr><th>Hạng</th><th>Đội</th><th>Thắng cặp</th><th>Điểm</th><th>Hiệu số</th></tr>
         ${rows}
       </table></div>
     </div>`;
