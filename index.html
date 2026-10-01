@@ -77,14 +77,17 @@ body.dark .champ{background:#052e16;color:#86efac}
 .saved-mark{color:var(--ok);font-weight:900}
 .saved-mark.live{color:#94a3b8;font-size:12px}
 .games{display:flex;flex-direction:column;gap:2px}
-.game-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto minmax(0,1fr) auto;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px dashed var(--line)}
+.game-row{display:flex;flex-direction:column;gap:3px;padding:8px 4px;border-bottom:1px dashed var(--line)}
 .game-row:last-child{border-bottom:0}
-.gname{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.game-row .gname:first-of-type{text-align:right}
-.gscore{font-size:17px;font-weight:900;min-width:24px;text-align:center}
+.gline1{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px}
+.gscorewrap{display:flex;align-items:baseline;justify-content:center;gap:7px}
+.gline2{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pairname{font-weight:700;font-size:13px;min-width:0;overflow-wrap:anywhere}
+.pairname.r{text-align:right}
+.gscore{font-size:18px;font-weight:900;min-width:26px;text-align:center}
 .gscore.lose{font-weight:400;color:var(--muted)}
 .gscore.live{color:var(--muted);font-weight:600}
-.gdash{color:var(--muted);font-weight:600}
+.gdash{color:var(--muted);font-weight:600;font-size:12px}
 /* ghi điểm */
 .score-icon{color:var(--muted);font-size:17px;line-height:1;cursor:pointer;text-decoration:none;padding:2px 4px}
 .score-icon:hover{color:var(--accent)}
@@ -140,7 +143,7 @@ body.dark .champ{background:#052e16;color:#86efac}
 <body>
 <div class="container">
   <h1>🏸 Giải cầu lông 6 đội</h1>
-  <div class="sub">6 đội · 3 người/đội (1 Nữ + 2 Nam) · 2 bảng đấu vòng tròn · 3 cặp theo trình độ (Nữ – Nam – Nam) · nhất mỗi bảng vào chung kết</div>
+  <div class="sub">6 đội · 3 người/đội (1 Nữ + 2 Nam) · 2 bảng đấu vòng tròn · mỗi trận <b>3 cặp đôi</b> (mỗi người đánh 2 cặp) · nhất mỗi bảng vào chung kết</div>
 
   <div class="card admin-needed">
     <div class="toolbar">
@@ -157,7 +160,8 @@ body.dark .champ{background:#052e16;color:#86efac}
     </div>
   </div>
 
-  <div class="card">
+  <!-- TẠM ẨN chức năng Nhà tài trợ (KHÔNG xóa) — bỏ class "hidden" để hiện lại -->
+  <div class="card hidden">
     <div class="sponsor-head">
       <h2>🤝 Nhà tài trợ</h2>
       <button type="button" class="sm-btn" id="sponsorToggle" onclick="toggleSponsors()" title="Ẩn/Hiện ảnh nhà tài trợ">Ẩn</button>
@@ -192,7 +196,7 @@ body.dark .champ{background:#052e16;color:#86efac}
 
   <div class="card">
     <h2>📅 Lịch vòng bảng</h2>
-    <div class="small muted" style="margin-bottom:8px">Mỗi trận đội gồm <b>3 cặp theo trình độ</b>: Nữ – Nam – Nam. Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
+    <div class="small muted" style="margin-bottom:8px">Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2 (mỗi người đánh 2 cặp). Bấm icon <b>🎯</b> <span class="ref-only">để ghi điểm nhanh cho trọng tài</span>.</div>
     <div id="schedule"></div>
   </div>
 </div>
@@ -212,6 +216,12 @@ const TEAMS={
 const TIDS=["A","B","C","D","E","F"];
 const POS=["Nữ","Nam","Nam"];
 const COLOR={A:"#dc2626",B:"#2563eb",C:"#ea580c",D:"#059669",E:"#7c3aed",F:"#0891b2"};
+/* ĐÁNH ĐÔI: mỗi đội 3 người → 3 cặp đôi (mỗi người đánh 2 cặp)
+   Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2 */
+const PAIRDEF=[[0,1],[0,2],[1,2]];
+const PAIRLABEL=["Cặp 1","Cặp 2","Cặp 3"];
+const pairNames=(t,p)=>PAIRDEF[p].map(i=>TEAMS[t][i]);
+const pairText=(t,p)=>PAIRDEF[p].map(i=>pname(TEAMS[t][i])).join(" + ");
 
 let groups={g1:[],g2:[]}, results={}, settings={winLimit:21,ver:3,finalSig:""};
 
@@ -379,7 +389,6 @@ function renderStandings(){
 function gameRow(m,p){
   const id=m.id+"-p"+p;
   const v=results[id]||{a:"",b:""};
-  const na=TEAMS[m.a]?TEAMS[m.a][p]:"?", nb=TEAMS[m.b]?TEAMS[m.b][p]:"?";
   const cA=COLOR[m.a]||"#666", cB=COLOR[m.b]||"#666";
   const has=(v.a!==""&&v.a!=null&&v.b!==""&&v.b!=null);
   const done=has&&v.done===true;
@@ -387,18 +396,21 @@ function gameRow(m,p){
   if(has){
     const x=Number(v.a),y=Number(v.b);
     sa=v.a;sb=v.b;
-    if(done){if(x>y)cb="gscore lose";else if(y>x)ca="gscore lose"}
-    else{ca="gscore live";cb="gscore live"}
+    if(done){if(x>y)cb+=" lose";else if(y>x)ca+=" lose"}
+    else{ca+=" live";cb+=" live"}
   }
   const mark=done?'<span class="saved-mark">✓</span>':(has?'<span class="saved-mark live">●</span>':"");
   return `<div class="game-row">
-    <span class="posbadge">${POS[p]}</span>
-    <span class="gname" style="color:${cA}">${pname(na)}</span>
-    <span class="${ca}">${sa}</span>
-    <span class="gdash">-</span>
-    <span class="${cb}">${sb}</span>
-    <span class="gname" style="color:${cB}">${pname(nb)}</span>
-    <span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+    <div class="gline1">
+      <span class="posbadge">${PAIRLABEL[p]}</span>
+      <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
+      <span class="head-right">${mark}<a class="score-icon ref-only" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+    </div>
+    <div class="gline2">
+      <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
+      <span class="gdash">vs</span>
+      <span class="pairname r" style="color:${cB}">${pairText(m.b,p)}</span>
+    </div>
   </div>`;
 }
 function matchCard(m,label){
@@ -468,9 +480,9 @@ function readVi(text){
 function speakScore(focus){
   if(!speechOn||!scoreUI)return;
   const aN=numVN(scoreUI.a),bN=numVN(scoreUI.b);
-  const tapName=focus==="a"?scoreUI.aPlayer:scoreUI.bPlayer;
+  const tapNames=(focus==="a"?scoreUI.aPair:scoreUI.bPair)||[];
   const tapScore=focus==="a"?aN:bN,othScore=focus==="a"?bN:aN;
-  const tN=String(tapName).split(/\s+/).join(", ");
+  const tN=tapNames.join(" ").split(/\s+/).join(", ");
   readVi(scoreUI.ended?(tN+", thắng. Tỉ số "+tapScore+" - "+othScore+"."):(tN+", "+tapScore+", "+othScore));
 }
 function toggleVoice(){
@@ -482,7 +494,8 @@ function openScoreModal(gameId){
   const m=findMatch(matchKey(gameId));
   if(!m)return;
   const p=gamePos(gameId);
-  const aPlayer=TEAMS[m.a][p],bPlayer=TEAMS[m.b][p];
+  const aPair=pairNames(m.a,p), bPair=pairNames(m.b,p);
+  const aText=pairText(m.a,p), bText=pairText(m.b,p);
   const cA=COLOR[m.a],cB=COLOR[m.b];
   const cur=results[gameId]||{};
   const va=(cur.a!==""&&cur.a!=null)?Number(cur.a):0;
@@ -492,10 +505,10 @@ function openScoreModal(gameId){
   ov.innerHTML=`
     <div class="modal">
       <div class="modal-head" style="background:linear-gradient(135deg,${cA},${cB})">
-        <div class="modal-title">🎯 Ghi điểm · ${POS[p]}</div>
+        <div class="modal-title">🎯 Ghi điểm · ${PAIRLABEL[p]}</div>
         <span class="head-right"><button class="voice-toggle" onclick="toggleVoice()" title="Bật/tắt đọc tỉ số">${speechOn?"🔊":"🔇"}</button><button onclick="closeScoreModal()">✕</button></span>
       </div>
-      <div class="modal-hint">🏁 Chạm ${settings.winLimit} điểm là thắng · bấm vào bên để cộng điểm · nút - khi bấm nhầm</div>
+      <div class="modal-hint">🏁 Chạm ${settings.winLimit} điểm là thắng cặp đôi này · bấm vào bên để cộng điểm · nút - khi bấm nhầm</div>
       <div class="tiso-row">
         <span style="font-weight:900;color:${cA}">Đội ${m.a}</span>
         <input type="text" id="tisoA" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${va}">
@@ -506,15 +519,15 @@ function openScoreModal(gameId){
       <div class="panels">
         <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('a')">-</button>
-          <div class="lab">Đội ${m.a} · ${POS[p]}</div>
-          <div class="pnames">${pname(aPlayer)}</div>
+          <div class="lab">Đội ${m.a} · ${PAIRLABEL[p]}</div>
+          <div class="pnames">${aText}</div>
           <div class="bigscore" id="scoreA">${va}</div>
           <span class="tap-add">+</span>
         </div>
         <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('b')">-</button>
-          <div class="lab">Đội ${m.b} · ${POS[p]}</div>
-          <div class="pnames">${pname(bPlayer)}</div>
+          <div class="lab">Đội ${m.b} · ${PAIRLABEL[p]}</div>
+          <div class="pnames">${bText}</div>
           <div class="bigscore" id="scoreB">${vb}</div>
           <span class="tap-add">+</span>
         </div>
@@ -522,7 +535,7 @@ function openScoreModal(gameId){
     </div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  scoreUI={id:gameId,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aPlayer:aPlayer,bPlayer:bPlayer,lastEdit:0};
+  scoreUI={id:gameId,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aPair:aPair,bPair:bPair,lastEdit:0};
   const ia=document.getElementById("tisoA"),ib=document.getElementById("tisoB");
   if(ia)ia.addEventListener("input",function(){const c=this.value.replace(/\D/g,"");if(this.value!==c)this.value=c;syncTiso("a",c)});
   if(ib)ib.addEventListener("input",function(){const c=this.value.replace(/\D/g,"");if(this.value!==c)this.value=c;syncTiso("b",c)});
@@ -535,7 +548,7 @@ function scoreTap(side){
 }
 function confirmMinus(side){
   if(!scoreUI)return;
-  const nm=side==="a"?scoreUI.aPlayer:scoreUI.bPlayer;
+  const nm=((side==="a"?scoreUI.aPair:scoreUI.bPair)||[]).map(pname).join(" + ");
   const ov=document.createElement("div");
   ov.className="confirm-overlay";
   ov.onclick=function(e){if(e.target===ov)closeConfirm()};
@@ -606,7 +619,7 @@ function checkWinLimit(){
   showWinBanner(w,champ&&champ.team?champ.team:null);
 }
 function showWinBanner(winner,champTeam){
-  const nm=winner==="a"?scoreUI.aPlayer:scoreUI.bPlayer;
+  const nm=((winner==="a"?scoreUI.aPair:scoreUI.bPair)||[]).map(pname).join(" + ");
   const s=scoreUI.a+" - "+scoreUI.b;
   const modal=document.querySelector("#scoreOverlay .modal");
   if(!modal)return;
