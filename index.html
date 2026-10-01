@@ -597,11 +597,9 @@ function renderSchedule(){
   const slots=slotList();
   if(!groups.g1.length||!slots.length){el.innerHTML='<div class="muted">Đang tải…</div>';return}
   el.innerHTML=slots.map(sl=>{
-    const rests={};sl.items.forEach(it=>{if(it)rests[it.group]=it.rest});
     return `<div class="round-block">
       <div class="round-head">
         <span class="rnum">LƯỢT ${sl.n}</span>
-        <span class="rest-note">Nghỉ — ${gName("g1")}: <b>${rests.g1||"—"}</b> · ${gName("g2")}: <b>${rests.g2||"—"}</b></span>
       </div>
       <div class="grid2">
         ${sl.items[0]?pairCard(sl.items[0],"SÂN 1"):""}
