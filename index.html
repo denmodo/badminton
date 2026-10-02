@@ -27,6 +27,8 @@ button.secondary{background:#475467}button.danger{background:#b42318}button.gree
 .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 @media(max-width:800px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
 body:not(.admin) .admin-needed{display:none!important}
+/* Bảng vòng bảng chỉ hiện cho người xem khi vòng bảng đã đấu xong (admin luôn thấy) */
+body:not(.admin) .standings-locked{display:none!important}
 
 .small{font-size:12px}.muted{color:var(--muted)}.hidden{display:none}
 /* nhà tài trợ */
@@ -213,12 +215,12 @@ body.dark .champ{background:#052e16;color:#86efac}
     <div class="grid3" id="teams"></div>
   </div>
 
-  <div class="card">
+  <div class="card standings-locked" id="standingsCard">
     <div class="gtitle">
       <h2 style="margin:0">🏆 Vòng bảng</h2>
       <button class="sm-btn admin-needed" onclick="requestRedraw()" title="Bốc thăm ngẫu nhiên chia lại 6 đội vào 2 bảng (xoá điểm)">🔀 Random xếp bảng</button>
     </div>
-    <div class="small muted" style="margin-bottom:10px">Xếp hạng theo <b>tổng điểm số</b> · nhất mỗi bảng vào chung kết. Bấm <b>🔀 Random xếp bảng</b> để bốc thăm ngẫu nhiên chia lại 6 đội vào 2 bảng (xoá toàn bộ điểm).</div>
+    <div class="small muted" style="margin-bottom:10px">Xếp hạng theo <b>số trận thắng</b> → hiệu số · nhất mỗi bảng vào chung kết.<span class="admin-needed"> Bấm <b>🔀 Random xếp bảng</b> để bốc thăm ngẫu nhiên chia lại 6 đội (xoá toàn bộ điểm).</span></div>
     <div class="grid2" id="standings"></div>
   </div>
 
@@ -716,6 +718,9 @@ function renderBronze(){
 }
 function renderAll(){
   cleanupKO();
+  // Bảng vòng bảng: admin luôn thấy; người xem chỉ thấy khi vòng bảng đã đấu xong
+  const sc=document.getElementById("standingsCard");
+  if(sc)sc.classList.toggle("standings-locked",!groupsDecided());
   renderTeams();renderStandings();renderPodium();renderFinal();renderBronze();renderSchedule();
 }
 /* ===== Ghi điểm (modal) ===== */
