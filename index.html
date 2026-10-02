@@ -557,11 +557,19 @@ function gameRow(m,p){
     if(done){if(x>y)cb+=" lose";else if(y>x)ca+=" lose"}
     else{ca+=" live";cb+=" live"}
   }
-  const mark=done?'<span class="saved-mark">✓</span>':(has?'<span class="saved-mark live">●</span>':"");
+  // Trận đã xong: không hiện tick; nút ghi điểm chỉ dành cho admin (ghi lại điểm)
+  let mark="", icon;
+  if(done){
+    mark="";
+    icon=`<a class="score-icon admin-needed" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi lại điểm (admin)">✏️</a>`;
+  }else{
+    mark=has?'<span class="saved-mark live">●</span>':"";
+    icon=`<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a>`;
+  }
   return `<div class="game-row">
     <div class="gline1">
       <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
-      <span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+      <span class="head-right">${mark}${icon}</span>
     </div>
     <div class="gline2">
       <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
@@ -584,13 +592,9 @@ function matchCard(m,label){
 }
 function pairCard(it,court){
   const cA=COLOR[it.a]||"#666",cB=COLOR[it.b]||"#666";
-  const id=it.id+"-p"+it.pair;
-  const v=results[id]||{};
-  const done=(v.done===true);
   return `<div class="card mcard" style="border-left-color:${cA};margin:0">
     <div class="round-title">
       <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${it.a}</b><span class="gdash">–</span><b style="color:${cB}">${it.b}</b></h3>
-      <span class="head-right small muted">${done?"Đã xong":""}</span>
     </div>
     <div class="games">${gameRow({id:it.id,a:it.a,b:it.b},it.pair)}</div>
   </div>`;
