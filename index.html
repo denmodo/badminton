@@ -528,16 +528,15 @@ function renderStandings(){
     let rows=st.map((x,i)=>`<tr>
         <td>${i+1}</td>
         <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${x.team}</span></td>
-        <td><b>${x.mWin}</b>/${x.mPlayed}</td>
         <td>${x.w}/${x.games}</td>
         <td>${x.pf}</td>
         <td>${x.diff>=0?"+":""}${x.diff}</td>
       </tr>`).join("");
-    if(!st.length)rows='<tr><td colspan="6" class="muted">Đang tải…</td></tr>';
+    if(!st.length)rows='<tr><td colspan="5" class="muted">Đang tải…</td></tr>';
     return `<div>
       <div class="gtitle"><h3 style="color:${gColor(g)}">${gName(g)}</h3>${dec?'<span class="qualify">Đã xong vòng bảng</span>':''}</div>
       <div class="tbl-wrap"><table>
-        <tr><th>Hạng</th><th>Đội</th><th>Thắng trận</th><th>Thắng cặp</th><th>Điểm</th><th>Hiệu số</th></tr>
+        <tr><th>Hạng</th><th>Đội</th><th>Thắng cặp</th><th>Điểm</th><th>Hiệu số</th></tr>
         ${rows}
       </table></div>
     </div>`;
