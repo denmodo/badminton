@@ -29,6 +29,8 @@ button.secondary{background:#475467}button.danger{background:#b42318}button.gree
 body:not(.admin) .admin-needed{display:none!important}
 /* Bảng vòng bảng chỉ hiện cho người xem khi vòng bảng đã đấu xong (admin luôn thấy) */
 body:not(.admin) .standings-locked{display:none!important}
+/* Card kết quả (chung cuộc / chung kết / tranh ba tư) chỉ hiện khi đã có thông tin */
+body:not(.admin) .result-card.no-info{display:none!important}
 
 .small{font-size:12px}.muted{color:var(--muted)}.hidden{display:none}
 /* nhà tài trợ */
@@ -224,17 +226,17 @@ body.dark .champ{background:#052e16;color:#86efac}
     <div class="grid2" id="standings"></div>
   </div>
 
-  <div class="card" id="podiumCard">
+  <div class="card result-card no-info" id="podiumCard">
     <h2>🏅 Kết quả chung cuộc</h2>
     <div id="podiumBox"></div>
   </div>
 
-  <div class="card" id="finalCard">
+  <div class="card result-card no-info" id="finalCard">
     <h2>🥇 Chung kết</h2>
     <div id="finalBox"></div>
   </div>
 
-  <div class="card" id="bronzeCard">
+  <div class="card result-card no-info" id="bronzeCard">
     <h2>🥉 Tranh giải ba tư</h2>
     <div id="bronzeBox"></div>
   </div>
@@ -718,8 +720,11 @@ function renderBronze(){
 function renderAll(){
   cleanupKO();
   // Bảng vòng bảng: admin luôn thấy; người xem chỉ thấy khi vòng bảng đã đấu xong
+  const decided=groupsDecided();
   const sc=document.getElementById("standingsCard");
-  if(sc)sc.classList.toggle("standings-locked",!groupsDecided());
+  if(sc)sc.classList.toggle("standings-locked",!decided);
+  // Card kết quả: chỉ hiện khi đã biết 2 đội vào chung kết / tranh ba tư
+  document.querySelectorAll(".result-card").forEach(el=>el.classList.toggle("no-info",!decided));
   renderTeams();renderStandings();renderPodium();renderFinal();renderBronze();renderSchedule();
 }
 /* ===== Ghi điểm (modal) ===== */
