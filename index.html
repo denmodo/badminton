@@ -558,18 +558,16 @@ function gameRow(m,p){
     else{ca+=" live";cb+=" live"}
   }
   // Trận đã xong: không hiện tick; nút ghi điểm chỉ dành cho admin (ghi lại điểm)
-  let mark="", icon;
+  let icon;
   if(done){
-    mark="";
     icon=`<a class="score-icon admin-needed" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi lại điểm (admin)">✏️</a>`;
   }else{
-    mark=has?'<span class="saved-mark live">●</span>':"";
     icon=`<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a>`;
   }
   return `<div class="game-row">
     <div class="gline1">
       <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
-      <span class="head-right">${mark}${icon}</span>
+      <span class="head-right">${icon}</span>
     </div>
     <div class="gline2">
       <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
