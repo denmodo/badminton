@@ -112,8 +112,8 @@ body.dark .champ{background:#052e16;color:#86efac}
 .games{display:flex;flex-direction:column;gap:2px}
 .game-row{display:flex;flex-direction:column;gap:3px;padding:8px 4px;border-bottom:1px dashed var(--line)}
 .game-row:last-child{border-bottom:0}
-.gline1{display:flex;align-items:center;justify-content:center;position:relative;min-height:26px;gap:8px}
-.gline1 .head-right{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+.gline1{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:26px}
+.gline1 .score-icon{line-height:1;padding:0 6px;font-size:16px;margin-top:-2px}
 .gscorewrap{display:flex;align-items:baseline;justify-content:center;gap:7px}
 .gline2{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .pairname{font-weight:700;font-size:13px;min-width:0;overflow-wrap:anywhere}
@@ -558,17 +558,12 @@ function gameRow(m,p){
     if(done){if(x>y)cb+=" lose";else if(y>x)ca+=" lose"}
     else{ca+=" live";cb+=" live"}
   }
-  // Trận đã xong: không hiện tick; nút ghi điểm chỉ dành cho admin (ghi lại điểm)
-  let icon;
-  if(done){
-    icon=`<a class="score-icon admin-needed" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi lại điểm (admin)">✏️</a>`;
-  }else{
-    icon=`<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a>`;
-  }
+  // Nút ghi điểm luôn hiển thị cho mọi người (kể cả trận đã xong, để sửa lại điểm) — đặt dưới tỉ số
+  const icon=`<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="${done?"Sửa điểm":"Ghi điểm nhanh"}">🎯</a>`;
   return `<div class="game-row">
     <div class="gline1">
       <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
-      <span class="head-right">${icon}</span>
+      ${icon}
     </div>
     <div class="gline2">
       <span class="pairname" style="color:${cA}">${pairText(m.a,p)}</span>
@@ -634,14 +629,13 @@ function koCard(m,label,tag){
   return `<div class="card mcard" style="border-left-color:${cA}">
     <div class="round-title">
       <h3><span class="rnum" style="background:${tag==="CK"?"#b45309":"#0891b2"}">${tag}</span><b style="color:${cA}">${m.a}</b><span class="vs">vs</span><b style="color:${cB}">${m.b}</b></h3>
-      <span class="head-right">${mark}<a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="Ghi điểm nhanh">🎯</a></span>
+      <span class="head-right">${mark}</span>
     </div>
     <div class="games">
       <div class="game-row">
         <div class="gline1">
-          <span class="posbadge">Cả đội</span>
           <span class="gscorewrap"><span class="${ca}">${sa}</span><span class="gdash">-</span><span class="${cb}">${sb}</span></span>
-          <span class="head-right"></span>
+          <a class="score-icon" href="javascript:void(0)" onclick="openScoreModal('${id}')" title="${done?"Sửa điểm":"Ghi điểm nhanh"}">🎯</a>
         </div>
         <div class="gline2">
           <span class="pairname" style="color:${cA}">${teamLineup(m.a)}</span>
