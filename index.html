@@ -766,6 +766,51 @@ function openScoreModal(gameId){
   const key=matchKey(gameId);
   const m=findMatch(key);
   if(!m)return;
+  // Trận đã kết thúc → hỏi lại trước khi cho sửa điểm
+  const prev=results[gameId];
+  if(prev&&prev.done===true){
+    confirmEditDone(gameId);
+    return;
+  }
+  openScoreModalNow(gameId);
+}
+function confirmEditDone(gameId){
+  const key=matchKey(gameId);
+  const m=findMatch(key);
+  if(!m)return;
+  const ko=isKO(key);
+  const pA=gamePos(gameId);
+  const aName=ko?("Đội "+m.a+" ("+teamLineup(m.a)+")"):pairText(m.a,pA);
+  const bName=ko?("Đội "+m.b+" ("+teamLineup(m.b)+")"):pairText(m.b,pA);
+  const v=results[gameId]||{};
+  const cA=COLOR[m.a]||"#666",cB=COLOR[m.b]||"#666";
+  const old=document.createElement("div");
+  old.className="confirm-overlay";old.id="editDoneOverlay";
+  old.onclick=function(e){if(e.target===old)closeEditDone()};
+  old.innerHTML=`
+    <div class="confirm-card" role="dialog">
+      <div class="confirm-icon" style="background:#fffbeb;color:#b45309">⚠️</div>
+      <div class="confirm-title">Trận đấu đã kết thúc</div>
+      <div class="confirm-msg">Bạn muốn <b>sửa lại điểm</b> của trận này phải không?</div>
+      <div class="confirm-score" style="margin:12px 0;font-size:15px">
+        <div style="color:${cA};font-weight:700">${aName}</div>
+        <div style="font-size:26px;font-weight:900;margin:2px 0">${v.a} <span style="color:var(--muted)">-</span> ${v.b}</div>
+        <div style="color:${cB};font-weight:700">${bName}</div>
+      </div>
+      <div class="confirm-sub">Kết quả cũ sẽ được ghi đè nếu bạn sửa</div>
+      <div class="confirm-actions">
+        <button type="button" class="secondary" onclick="closeEditDone()">Hủy</button>
+        <button type="button" onclick="proceedEditDone('${gameId}')">Sửa điểm</button>
+      </div>
+    </div>`;
+  document.body.appendChild(old);
+}
+function closeEditDone(){const el=document.getElementById("editDoneOverlay");if(el)el.remove()}
+function proceedEditDone(gameId){closeEditDone();openScoreModalNow(gameId)}
+function openScoreModalNow(gameId){
+  const key=matchKey(gameId);
+  const m=findMatch(key);
+  if(!m)return;
   const ko=isKO(key);
   const pA=gamePos(gameId);
   const aPair=ko?TEAMS[m.a].slice():pairNames(m.a,pA);
@@ -813,7 +858,10 @@ function openScoreModal(gameId){
     </div>`;
   document.body.appendChild(ov);
   document.body.style.overflow="hidden";
-  scoreUI={id:gameId,overlay:ov,confirmOv:null,ended:false,a:va,b:vb,aPair:aPair,bPair:bPair,lastEdit:0};
+  // Nếu mở lại trận đã đạt mốc → coi như đã kết thúc, tránh bắn banner thắng lần nữa
+  const lim=limitFor(gameId);
+  const alreadyEnded=(va>=lim||vb>=lim);
+  scoreUI={id:gameId,overlay:ov,confirmOv:null,ended:alreadyEnded,a:va,b:vb,aPair:aPair,bPair:bPair,lastEdit:0};
   const ia=document.getElementById("tisoA"),ib=document.getElementById("tisoB");
   if(ia)ia.addEventListener("input",function(){const c=this.value.replace(/\D/g,"");if(this.value!==c)this.value=c;syncTiso("a",c)});
   if(ib)ib.addEventListener("input",function(){const c=this.value.replace(/\D/g,"");if(this.value!==c)this.value=c;syncTiso("b",c)});
@@ -929,7 +977,7 @@ function closeScoreModal(){
   if(scoreUI&&scoreUI.overlay)scoreUI.overlay.remove();
   scoreUI=null;document.body.style.overflow="";
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI){if(scoreUI.confirmOv)closeConfirm();else closeScoreModal()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&scoreUI){if(scoreUI.confirmOv)closeConfirm();else closeScoreModal()}if(e.key==="Escape"&&document.getElementById("editDoneOverlay"))closeEditDone()});
 
 /* ===== Admin ===== */
 const ADMIN_PASS="7722".split("").reverse().join("");
