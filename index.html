@@ -136,6 +136,7 @@ body.dark .champ{background:#052e16;color:#86efac}
 @media (orientation:landscape) and (max-width:1000px){.modal{max-width:none}}
 .modal-hint{padding:9px 12px;text-align:center;font-size:12px;color:var(--muted);background:var(--soft);border-bottom:1px solid var(--line)}
 .tiso-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:var(--soft);border-bottom:1px solid var(--line)}
+.tiso-row.hidden{display:none!important}
 .tiso-row input{width:56px;padding:8px;border:1px solid var(--line);border-radius:10px;font-size:20px;font-weight:900;text-align:center;background:var(--input);color:var(--text);font-family:inherit}
 .side-panel{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 14px;text-align:center;color:#fff;cursor:pointer;user-select:none;touch-action:manipulation;position:relative;overflow:hidden}
 .side-panel .lab{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;opacity:.6}
@@ -791,7 +792,8 @@ function openScoreModal(gameId){
         <span class="head-right"><button class="voice-toggle" onclick="toggleVoice()" title="Bật/tắt đọc tỉ số">${speechOn?"🔊":"🔇"}</button><button onclick="closeScoreModal()">✕</button></span>
       </div>
       <div class="modal-hint">🏁 Chạm ${limitFor(gameId)} điểm là thắng cặp đôi này · bấm vào bên để cộng điểm · nút - khi bấm nhầm</div>
-      <div class="tiso-row">
+      <!-- TẠM ẨN ô nhập tỉ số (chỉ cho bấm để tăng điểm) — bỏ class "hidden" để hiện lại -->
+      <div class="tiso-row hidden">
         <span style="font-weight:900;color:${cA}">Đội ${m.a}</span>
         <input type="text" id="tisoA" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${va}">
         <b style="color:var(--muted)">-</b>
