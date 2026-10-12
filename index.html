@@ -250,7 +250,7 @@ body.dark .champ{background:#052e16;color:#86efac}
         <button class="sm-btn hid admin-needed" onclick="requestReset()" title="Xoá toàn bộ điểm giả lập">🗑️ Xoá</button>
       </span>
     </div>
-    <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng 1 + 1 cặp Bảng 2). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> để ghi điểm nhanh cho trọng tài.</div>
+    <div class="small muted" style="margin-bottom:8px">Chia thành <b>9 lượt</b> — mỗi lượt <b>2 sân đấu song song</b> (1 cặp Bảng A + 1 cặp Bảng B). Mỗi đội đá <b>6 cặp</b> và <b>nghỉ 3 lượt</b>, mỗi người đá 4 cặp — chỉ đánh tối đa 2 cặp liền nhau rồi được nghỉ. Mỗi trận đội gồm <b>3 cặp đôi</b>: Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2. Bấm icon <b>🎯</b> để ghi điểm nhanh cho trọng tài.</div>
     <div id="schedule"></div>
   </div>
 </div>
@@ -270,6 +270,9 @@ const TEAMS={
 const TIDS=["A","B","C","D","E","F"];
 const POS=["Nữ","Nam","Nam"];
 const COLOR={A:"#dc2626",B:"#2563eb",C:"#ea580c",D:"#059669",E:"#7c3aed",F:"#0891b2"};
+/* Tên đội HIỂN THỊ là số 1–6 (id nội bộ vẫn A–F để không phá dữ liệu/id trận trên cloud) */
+const DNAME={A:"1",B:"2",C:"3",D:"4",E:"5",F:"6"};
+const dname=t=>DNAME[t]||t;
 /* ĐÁNH ĐÔI: mỗi đội 3 người → 3 cặp đôi (mỗi người đánh 2 cặp)
    Cặp 1 = Nữ + Nam1 · Cặp 2 = Nữ + Nam2 · Cặp 3 = Nam1 + Nam2 */
 const PAIRDEF=[[0,1],[0,2],[1,2]];
@@ -326,7 +329,7 @@ function mergeResults(remote){
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function pname(n){return n}
 function teamGroup(t){if(groups.g1.includes(t))return "g1";if(groups.g2.includes(t))return "g2";return null}
-function gName(g){return g==="g1"?"Bảng 1":(g==="g2"?"Bảng 2":"Chung kết")}
+function gName(g){return g==="g1"?"Bảng A":(g==="g2"?"Bảng B":"Chung kết")}
 function gColor(g){return g==="g1"?"#2563eb":"#ea580c"}
 
 /* ===== Bốc thăm chia bảng ===== */
@@ -342,7 +345,7 @@ function generateSchedule(){
   const wl=document.getElementById("winLimit");if(wl)wl.value=settings.winLimit;
   const kl=document.getElementById("koWinLimit");if(kl)kl.value=settings.koWinLimit;
   pushAllToCloud();
-  setStatus("Đã bốc thăm lại: Bảng 1 = "+groups.g1.join(", ")+" · Bảng 2 = "+groups.g2.join(", ")+". Điểm đã xoá.");
+  setStatus("Đã bốc thăm lại: "+gName("g1")+" = "+groups.g1.map(dname).join(", ")+" · "+gName("g2")+" = "+groups.g2.map(dname).join(", ")+". Điểm đã xoá.");
   renderAll();
 }
 /* ===== Danh sách trận ===== */
@@ -517,7 +520,7 @@ function renderTeams(){
     const g=teamGroup(t),c=COLOR[t];
     return `<div class="team" style="border-left-color:${c}">
       <div class="team-head">
-        <span class="tbadge" style="background:${c}">${t}</span>
+        <span class="tbadge" style="background:${c}">${dname(t)}</span>
         <span class="tgrp">${g?gName(g):"—"}</span>
       </div>
       ${TEAMS[t].map((p,i)=>`<div class="prow"><span class="posbadge">${POS[i]}</span><span class="pname2">${pname(p)}</span></div>`).join("")}
@@ -530,7 +533,7 @@ function renderStandings(){
     const st=standings(g),dec=groupDecided(g);
     let rows=st.map((x,i)=>`<tr>
         <td>${i+1}</td>
-        <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${x.team}</span></td>
+        <td><span class="tbadge" style="background:${COLOR[x.team]};width:22px;height:22px;font-size:12px">${dname(x.team)}</span></td>
         <td>${x.w}/${x.games}</td>
         <td>${x.pf}</td>
         <td>${x.diff>=0?"+":""}${x.diff}</td>
@@ -578,7 +581,7 @@ function matchCard(m,label){
   let done=0;for(let p=0;p<3;p++){const v=results[m.id+"-p"+p];if(v&&v.done===true)done++}
   return `<div class="card mcard" style="border-left-color:${cA}">
     <div class="round-title">
-      <h3><span class="rnum">${label}</span><b style="color:${cA}">${m.a}</b><span class="vs">vs</span><b style="color:${cB}">${m.b}</b></h3>
+      <h3><span class="rnum">${label}</span><b style="color:${cA}">${dname(m.a)}</b><span class="vs">vs</span><b style="color:${cB}">${dname(m.b)}</b></h3>
       <span class="head-right small muted">${done}/3 cặp</span>
     </div>
     <div class="games">${rows}</div>
@@ -588,7 +591,7 @@ function pairCard(it,court){
   const cA=COLOR[it.a]||"#666",cB=COLOR[it.b]||"#666";
   return `<div class="card mcard" style="border-left-color:${cA};margin:0">
     <div class="round-title">
-      <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${it.a}</b><span class="gdash">–</span><b style="color:${cB}">${it.b}</b></h3>
+      <h3><span class="rnum" style="background:${gColor(it.group)}">${court}</span><b style="color:${cA}">${dname(it.a)}</b><span class="gdash">–</span><b style="color:${cB}">${dname(it.b)}</b></h3>
     </div>
     <div class="games">${gameRow({id:it.id,a:it.a,b:it.b},it.pair)}</div>
   </div>`;
@@ -624,12 +627,10 @@ function koCard(m,label,tag){
     if(done){if(x>y)cb+=" lose";else if(y>x)ca+=" lose"}
     else{ca+=" live";cb+=" live"}
   }
-  const mark=done?'<span class="saved-mark">✓</span>':(has?'<span class="saved-mark live">●</span>':"");
   const win=koWinner(id);
   return `<div class="card mcard" style="border-left-color:${cA}">
     <div class="round-title">
-      <h3><span class="rnum" style="background:${tag==="CK"?"#b45309":"#0891b2"}">${tag}</span><b style="color:${cA}">${m.a}</b><span class="vs">vs</span><b style="color:${cB}">${m.b}</b></h3>
-      <span class="head-right">${mark}</span>
+      <h3><span class="rnum" style="background:${tag==="CK"?"#b45309":"#0891b2"}">${tag}</span><b style="color:${cA}">${dname(m.a)}</b><span class="vs">vs</span><b style="color:${cB}">${dname(m.b)}</b></h3>
     </div>
     <div class="games">
       <div class="game-row">
@@ -644,7 +645,7 @@ function koCard(m,label,tag){
         </div>
       </div>
     </div>
-    ${win?`<div class="qualify" style="margin-top:6px;display:block;text-align:center">🎉 Đội ${win.team} thắng (${win.sa} - ${win.sb})</div>`:""}
+    ${win?`<div class="qualify" style="margin-top:6px;display:block;text-align:center">🎉 Đội ${dname(win.team)} thắng (${win.sa} - ${win.sb})</div>`:""}
   </div>`;
 }
 /* ===== Bảng trao giải: Vô địch / Nhì / Ba (+ hạng 4) ===== */
@@ -655,7 +656,7 @@ function podRow(cls,medal,rank,team,scoreTxt){
     <span class="medal">${medal}</span>
     <div class="pbody">
       <div class="prank">${rank}</div>
-      <div class="pteam" style="color:${c}">Đội ${team}</div>
+      <div class="pteam" style="color:${c}">Đội ${dname(team)}</div>
       <div class="pnames">${teamLineup(team)}</div>
     </div>
     ${scoreTxt?`<span class="pscore">${scoreTxt}</span>`:""}
@@ -681,7 +682,7 @@ function renderPodium(){
     r1=podRow("gold","🏆","Vô địch",w.team,winScoreTxt(w.team,w.sa,w.sb,f,"thắng CK"));
     r2=podRow("silver","🥈","Hạng nhì",lose,winScoreTxt(lose,w.sa,w.sb,f,"thua CK"));
   }else{
-    r1=`<div class="pod gold pending"><span class="medal">🏆</span><div class="pbody"><div class="prank">Vô địch</div><div class="pteam">Chưa xác định</div><div class="pnames">Đang chờ chung kết: Đội ${f.a} vs Đội ${f.b}</div></div></div>`;
+    r1=`<div class="pod gold pending"><span class="medal">🏆</span><div class="pbody"><div class="prank">Vô địch</div><div class="pteam">Chưa xác định</div><div class="pnames">Đang chờ chung kết: Đội ${dname(f.a)} vs Đội ${dname(f.b)}</div></div></div>`;
     r2=`<div class="pod silver pending"><span class="medal">🥈</span><div class="pbody"><div class="prank">Hạng nhì</div><div class="pteam">Chưa xác định</div><div class="pnames">Đội thua chung kết</div></div></div>`;
   }
   // ----- 2) HẠNG BA & HẠNG TƯ (từ trận tranh giải ba) -----
@@ -691,7 +692,7 @@ function renderPodium(){
     r3=podRow("bronze","🥉","Hạng ba",bw.team,winScoreTxt(bw.team,bw.sa,bw.sb,br,"thắng tranh ba"));
     r4=podRow("","4️⃣","Hạng tư",lose4,winScoreTxt(lose4,bw.sa,bw.sb,br,"thua tranh ba"));
   }else{
-    r3=`<div class="pod bronze pending"><span class="medal">🥉</span><div class="pbody"><div class="prank">Hạng ba</div><div class="pteam">Chưa xác định</div><div class="pnames">Đang chờ tranh giải ba: Đội ${br.a} vs Đội ${br.b}</div></div></div>`;
+    r3=`<div class="pod bronze pending"><span class="medal">🥉</span><div class="pbody"><div class="prank">Hạng ba</div><div class="pteam">Chưa xác định</div><div class="pnames">Đang chờ tranh giải ba: Đội ${dname(br.a)} vs Đội ${dname(br.b)}</div></div></div>`;
     r4=`<div class="pod pending"><span class="medal">4️⃣</span><div class="pbody"><div class="prank">Hạng tư</div><div class="pteam">Chưa xác định</div><div class="pnames">Đội thua trận tranh giải ba</div></div></div>`;
   }
   box.innerHTML=`<div class="podium">${r1}${r2}${r3}${r4}</div>`;
@@ -708,7 +709,7 @@ function renderFinal(){
 function renderBronze(){
   const box=document.getElementById("bronzeBox");if(!box)return;
   if(!groupsDecided()){
-    box.innerHTML='<div class="muted small">Đang chờ kết quả vòng bảng — đội nhì bảng 1 sẽ gặp đội nhì bảng 2.</div>';
+    box.innerHTML='<div class="muted small">Đang chờ kết quả vòng bảng — đội nhì '+gName("g1")+' sẽ gặp đội nhì '+gName("g2")+'.</div>';
     return;
   }
   const m=knockoutMatches().find(x=>x.id==="bronze");
@@ -833,23 +834,23 @@ function openScoreModalNow(gameId){
       <div class="modal-hint">🏁 Chạm ${limitFor(gameId)} điểm là thắng cặp đôi này · bấm vào bên để cộng điểm · nút - khi bấm nhầm</div>
       <!-- TẠM ẨN ô nhập tỉ số (chỉ cho bấm để tăng điểm) — bỏ class "hidden" để hiện lại -->
       <div class="tiso-row hidden">
-        <span style="font-weight:900;color:${cA}">Đội ${m.a}</span>
+        <span style="font-weight:900;color:${cA}">Đội ${dname(m.a)}</span>
         <input type="text" id="tisoA" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${va}">
         <b style="color:var(--muted)">-</b>
         <input type="text" id="tisoB" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="${vb}">
-        <span style="font-weight:900;color:${cB}">Đội ${m.b}</span>
+        <span style="font-weight:900;color:${cB}">Đội ${dname(m.b)}</span>
       </div>
       <div class="panels">
         <div class="side-panel" style="background:${cA}" data-side="a" onclick="scoreTap('a')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('a')">-</button>
-          <div class="lab">Đội ${m.a} · ${ko ? "Cả đội" : PAIRLABEL[pA]}</div>
+          <div class="lab">Đội ${dname(m.a)} · ${ko ? "Cả đội" : PAIRLABEL[pA]}</div>
           <div class="pnames">${aText}</div>
           <div class="bigscore" id="scoreA">${va}</div>
           <span class="tap-add">+</span>
         </div>
         <div class="side-panel" style="background:${cB}" data-side="b" onclick="scoreTap('b')">
           <button class="minus" title="Trừ 1 điểm" onclick="event.stopPropagation();confirmMinus('b')">-</button>
-          <div class="lab">Đội ${m.b} · ${ko ? "Cả đội" : PAIRLABEL[pA]}</div>
+          <div class="lab">Đội ${dname(m.b)} · ${ko ? "Cả đội" : PAIRLABEL[pA]}</div>
           <div class="pnames">${bText}</div>
           <div class="bigscore" id="scoreB">${vb}</div>
           <span class="tap-add">+</span>
@@ -958,7 +959,7 @@ function showWinBanner(winner,champTeam){
     <div class="win-trophy">${champTeam?"🏆":"🎉"}</div>
     <div class="win-title">${nm} THẮNG!</div>
     <div class="win-score">${s}</div>
-    <div class="win-note">${champTeam?"ĐỘI "+champTeam+" VÔ ĐỊCH GIẢI ĐẤU!":"Chạm mốc "+limitFor(scoreUI.id)+" điểm — cặp đấu đã kết thúc và được lưu."}</div>
+    <div class="win-note">${champTeam?"ĐỘI "+dname(champTeam)+" VÔ ĐỊCH GIẢI ĐẤU!":"Chạm mốc "+limitFor(scoreUI.id)+" điểm — cặp đấu đã kết thúc và được lưu."}</div>
     <button class="green" onclick="closeScoreModal()">✅ Đóng</button>`;
   modal.appendChild(cover);
   if(typeof confetti!=="undefined"){
@@ -1135,7 +1136,7 @@ function setupWinLimitInput(){
         setStatus("Đã tải dữ liệu từ đám mây.");
       }else{
         generateSchedule();
-        setStatus("Đã bốc thăm chia bảng: Bảng 1 = "+groups.g1.join(", ")+" · Bảng 2 = "+groups.g2.join(", "));
+        setStatus("Đã bốc thăm chia bảng: "+gName("g1")+" = "+groups.g1.map(dname).join(", ")+" · "+gName("g2")+" = "+groups.g2.map(dname).join(", "));
       }
     }).catch(()=>{
       redrawGroups();renderAll();

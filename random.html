@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chia bảng bằng vòng quay</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+  h1 { text-align: center; margin: 10px 0 24px; font-size: 1.8rem; }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 860px) {
+    .container { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: #1e293b;
+    border-radius: 16px;
+    padding: 20px;
+  }
+  .wheel-wrap {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    margin: 0 auto;
+  }
+  canvas { width: 340px; height: 340px; display: block; }
+  .pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 26px solid #facc15;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.5));
+    z-index: 2;
+  }
+  .btn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #0f172a;
+    background: #facc15;
+    transition: transform .1s, opacity .2s;
+  }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.secondary { background: #334155; color: #e2e8f0; }
+  .result {
+    margin-top: 16px;
+    min-height: 48px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #38bdf8;
+  }
+  label { display: block; margin-bottom: 6px; font-size: .9rem; color: #94a3b8; }
+  textarea, input[type="number"] {
+    width: 100%;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: .95rem;
+    font-family: inherit;
+  }
+  textarea { height: 230px; resize: vertical; }
+  .row { margin-top: 14px; }
+  .remaining { margin-top: 12px; font-size: .85rem; color: #94a3b8; }
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+  }
+  .group {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 140px;
+  }
+  .group h3 {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .group h3 span { font-size: .8rem; color: #94a3b8; font-weight: 400; }
+  .group ol { margin: 0; padding-left: 22px; }
+  .group li { padding: 4px 0; animation: pop .4s ease; }
+  .group li.new { color: #facc15; font-weight: 600; }
+  .empty { color: #475569; font-size: .9rem; font-style: italic; }
+  @keyframes pop {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎡 Chia bảng bằng vòng quay</h1>
+
+<div class="container">
+  <!-- Cột trái: vòng quay + điều khiển -->
+  <div class="panel">
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="680" height="680"></canvas>
+    </div>
+
+    <button class="btn" id="spinBtn">QUAY</button>
+    <div class="result" id="result">Nhấn QUAY để bốc đội</div>
+    <div class="remaining" id="remaining"></div>
+
+    <div class="row">
+      <label for="teamInput">Danh sách đội (mỗi dòng 1 đội)</label>
+      <textarea id="teamInput"></textarea>
+    </div>
+    <div class="row">
+      <label for="groupCount">Số bảng (tối đa 26)</label>
+      <input type="number" id="groupCount" min="1" max="26" value="2">
+    </div>
+    <button class="btn secondary" id="applyBtn">Áp dụng &amp; làm lại</button>
+  </div>
+
+  <!-- Cột phải: các bảng -->
+  <div class="panel">
+    <div class="groups" id="groups"></div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const canvas = $('wheel');
+  const ctx = canvas.getContext('2d');
+  const R = canvas.width / 2;
+  const TWO_PI = Math.PI * 2;
+
+  let remaining = [];   // các đội còn trên vòng quay
+  let groups = [];      // [{name, teams:[], cap}]
+  let rotation = 0;     // góc hiện tại của vòng quay (radian)
+  let spinning = false;
+  let lastPlaced = null;
+
+  // ---------- Khởi tạo ----------
+  function init() {
+    const names = $('teamInput').value
+      .split('\n').map(s => s.trim()).filter(Boolean);
+    let k = parseInt($('groupCount').value, 10);
+    if (isNaN(k) || k < 1) k = 1;
+    if (k > 26) k = 26;
+    $('groupCount').value = k;
+
+    const n = names.length;
+    const base = Math.floor(n / k);
+    const extra = n % k;
+
+    groups = Array.from({ length: k }, (_, i) => ({
+      name: String.fromCharCode(65 + i),
+      teams: [],
+      cap: base + (i < extra ? 1 : 0)   // số đội tối đa của mỗi bảng
+    }));
+
+    remaining = [...names];
+    rotation = 0;
+    lastPlaced = null;
+    $('result').textContent = n ? 'Nhấn QUAY để bốc đội' : 'Hãy nhập danh sách đội';
+    $('spinBtn').disabled = n === 0;
+
+    renderGroups();
+    drawWheel();
+    updateRemaining();
+  }
+
+  // ---------- Vẽ vòng quay ----------
+  function drawWheel() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const n = remaining.length;
+
+    if (n === 0) {
+      ctx.beginPath();
+      ctx.arc(R, R, R - 8, 0, TWO_PI);
+      ctx.fillStyle = '#334155';
+      ctx.fill();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 40px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('HẾT ĐỘI', R, R);
+      return;
+    }
+
+    const seg = TWO_PI / n;
+    const fontSize = Math.max(10, Math.min(26, 360 / n));
+
+    for (let i = 0; i < n; i++) {
+      const start = rotation + i * seg;
+      const end = start + seg;
+
+      ctx.beginPath();
+      ctx.moveTo(R, R);
+      ctx.arc(R, R, R - 8, start, end);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${(i * 360 / n) % 360}, 70%, 52%)`;
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Ghi tên đội theo hướng bán kính
+      ctx.save();
+      ctx.translate(R, R);
+      ctx.rotate(start + seg / 2);
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${fontSize}px system-ui`;
+      let label = remaining[i];
+      if (label.length > 18) label = label.slice(0, 17) + '…';
+      ctx.fillText(label, R - 26, 0);
+      ctx.restore();
+    }
+
+    // Tâm vòng quay
+    ctx.beginPath();
+    ctx.arc(R, R, 18, 0, TWO_PI);
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+  }
+
+  // ---------- Quay ----------
+  function spin() {
+    if (spinning || remaining.length === 0) return;
+    if (remaining.length === 1) { autoPlaceLast(); return; }   // thêm dòng này
+
+    spinning = true;
+    $('spinBtn').disabled = true;
+    $('result').textContent = 'Đang quay...';
+    lastPlaced = null;
+
+    const n = remaining.length;
+    const seg = TWO_PI / n;
+    const w = Math.floor(Math.random() * n);          // đội trúng
+    // Góc quay sao cho tâm đoạn w nằm ngay dưới kim chỉ (đỉnh trên cùng)
+    const targetRot = -Math.PI / 2 - (w * seg + seg / 2);
+
+    const baseMod = ((rotation % TWO_PI) + TWO_PI) % TWO_PI;
+    const targetMod = ((targetRot % TWO_PI) + TWO_PI) % TWO_PI;
+    const delta = (targetMod - baseMod + TWO_PI) % TWO_PI;
+
+    const from = rotation;
+    const to = rotation + 6 * TWO_PI + delta;         // quay thêm 6 vòng cho đẹp
+    const duration = 4500;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - t, 4);           // easing giảm tốc
+      rotation = from + (to - from) * eased;
+      drawWheel();
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        rotation = to;
+        finish(w);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+   // ---------- Xếp đội vào bảng ----------
+  function finish(index) {
+    spinning = false;
+
+    const team = remaining.splice(index, 1)[0];
+
+    // Chọn ngẫu nhiên trong các bảng còn chỗ
+    const open = groups.filter(g => g.teams.length < g.cap);
+    const group = open[Math.floor(Math.random() * open.length)];
+    group.teams.push(team);
+    lastPlaced = { team, group: group.name };
+
+    $('result').textContent = `${team} → Bảng ${group.name}`;
+    refresh();
+
+    // Còn đúng 1 đội: tự xếp vào bảng còn lại, không cần quay
+    if (remaining.length === 1) {
+      autoPlaceLast();
+    }
+  }
+
+  // Xếp đội cuối cùng vào bảng còn chỗ, không quay
+  function autoPlaceLast() {
+    const team = remaining.pop();
+    const group = groups.find(g => g.teams.length < g.cap);
+    group.teams.push(team);
+    lastPlaced = { team, group: group.name };
+
+    refresh();
+    $('result').textContent = `✅ Đã chia xong! ${team} → Bảng ${group.name} (tự động)`;
+  }
+
+  // Cập nhật toàn bộ giao diện sau mỗi thay đổi
+  function refresh() {
+    renderGroups();
+    drawWheel();
+    updateRemaining();
+    $('spinBtn').disabled = remaining.length === 0;
+  }
+
+  // ---------- Hiển thị ----------
+  function renderGroups() {
+    const box = $('groups');
+    box.innerHTML = '';
+    groups.forEach(g => {
+      const card = document.createElement('div');
+      card.className = 'group';
+
+      const title = document.createElement('h3');
+      title.innerHTML = `Bảng ${g.name} <span>${g.teams.length}/${g.cap}</span>`;
+      card.appendChild(title);
+
+      if (g.teams.length === 0) {
+        const e = document.createElement('div');
+        e.className = 'empty';
+        e.textContent = 'Chưa có đội';
+        card.appendChild(e);
+      } else {
+        const ol = document.createElement('ol');
+        g.teams.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = t;
+          if (lastPlaced && lastPlaced.team === t) li.className = 'new';
+          ol.appendChild(li);
+        });
+        card.appendChild(ol);
+      }
+      box.appendChild(card);
+    });
+  }
+
+  function updateRemaining() {
+    $('remaining').textContent = `Còn ${remaining.length} đội chưa được bốc`;
+  }
+
+  // ---------- Sự kiện ----------
+  $('spinBtn').addEventListener('click', spin);
+  $('applyBtn').addEventListener('click', init);
+
+  // Dữ liệu mẫu: 24 đội
+  $('teamInput').value = Array.from({ length: 6 }, (_, i) => `Đội ${i + 1}`).join('\n');
+  init();
+</script>
+</body>
+</html>
