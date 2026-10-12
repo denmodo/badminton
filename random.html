@@ -3,152 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chia bảng bằng vòng quay</title>
+<title>🎡 Chia bảng bằng vòng quay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 20px;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-  }
-  h1 { text-align: center; margin: 10px 0 24px; font-size: 1.8rem; }
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 24px;
-  }
-  @media (max-width: 860px) {
-    .container { grid-template-columns: 1fr; }
-  }
-  .panel {
-    background: #1e293b;
-    border-radius: 16px;
-    padding: 20px;
-  }
-  .wheel-wrap {
-    position: relative;
-    width: 340px;
-    height: 340px;
-    margin: 0 auto;
-  }
-  canvas { width: 340px; height: 340px; display: block; }
-  .pointer {
-    position: absolute;
-    top: -6px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0; height: 0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    border-top: 26px solid #facc15;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,.5));
-    z-index: 2;
-  }
-  .btn {
-    display: block;
-    width: 100%;
-    margin-top: 16px;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    color: #0f172a;
-    background: #facc15;
-    transition: transform .1s, opacity .2s;
-  }
-  .btn:hover:not(:disabled) { transform: translateY(-1px); }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
-  .btn.secondary { background: #334155; color: #e2e8f0; }
-  .result {
-    margin-top: 16px;
-    min-height: 48px;
-    text-align: center;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #38bdf8;
-  }
-  label { display: block; margin-bottom: 6px; font-size: .9rem; color: #94a3b8; }
-  textarea, input[type="number"] {
-    width: 100%;
-    background: #0f172a;
-    color: #e2e8f0;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: .95rem;
-    font-family: inherit;
-  }
-  textarea { height: 230px; resize: vertical; }
-  .row { margin-top: 14px; }
-  .remaining { margin-top: 12px; font-size: .85rem; color: #94a3b8; }
-  .groups {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: 14px;
-  }
-  .group {
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 14px;
-    min-height: 140px;
-  }
-  .group h3 {
-    margin: 0 0 10px;
-    font-size: 1.1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .group h3 span { font-size: .8rem; color: #94a3b8; font-weight: 400; }
-  .group ol { margin: 0; padding-left: 22px; }
-  .group li { padding: 4px 0; animation: pop .4s ease; }
-  .group li.new { color: #facc15; font-weight: 600; }
-  .empty { color: #475569; font-size: .9rem; font-style: italic; }
-  @keyframes pop {
-    from { opacity: 0; transform: translateX(-6px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--accent:#2563eb;--ok:#15803d;--warn:#b45309;--soft:rgba(148,163,184,.14);--soft2:rgba(148,163,184,.22);--input:#fff;}
+body.dark{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--line:#334155;--accent:#3b82f6;--ok:#22c55e;--warn:#f59e0b;--soft:rgba(148,163,184,.14);--soft2:rgba(148,163,184,.24);--input:#0f172a;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 "Be Vietnam Pro",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Vietnamese",Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+.container{max-width:1200px;margin:auto;padding:20px}
+h1{margin:0 0 4px;font-size:28px}
+.sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px #1018280a}
+.layout{display:grid;grid-template-columns:380px 1fr;gap:14px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+button{border:0;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;touch-action:manipulation;font-family:inherit;font-size:15px}
+button.secondary{background:#475467}
+button:disabled{opacity:.5;cursor:not-allowed}
+.btn{display:block;width:100%;margin-top:14px;padding:12px;font-size:16px;font-weight:800}
+.btn.secondary{background:var(--soft2);color:var(--text)}
+.result{margin-top:14px;min-height:44px;text-align:center;font-size:16px;font-weight:800;color:var(--accent);background:var(--soft);border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center}
+.remaining{margin-top:10px;font-size:13px;color:var(--muted);text-align:center}
+label{display:block;margin-bottom:6px;font-size:13px;font-weight:700;color:var(--muted)}
+textarea,input[type=number]{width:100%;background:var(--input);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;font-family:inherit;font-weight:600}
+textarea{height:210px;resize:vertical}
+.row{margin-top:14px}
+.wheel-wrap{position:relative;width:100%;max-width:340px;aspect-ratio:1/1;margin:0 auto}
+canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--warn);filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));z-index:2}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.group{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:14px;padding:12px 14px;min-height:140px}
+.group h3{margin:0 0 10px;font-size:17px;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.group h3 .gname{display:inline-flex;align-items:center;gap:6px}
+.group h3 .gpre{font-size:15px;font-weight:800;color:var(--muted)}
+.group h3 .gname span{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:8px;font-size:14px;font-weight:900}
+.group h3 > span:last-child{font-size:12px;color:var(--muted);font-weight:700;background:var(--soft2);border-radius:999px;padding:2px 8px}
+.group ol{margin:0;padding-left:22px}
+.group li{padding:4px 0;font-weight:700;animation:pop .4s ease}
+.group li.new{color:var(--warn)}
+.empty{color:var(--muted);font-size:13px;font-style:italic}
+@keyframes pop{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.dark-toggle{position:fixed;bottom:16px;right:16px;z-index:999;width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 12px #00000026;font-size:20px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text)}
 </style>
 </head>
 <body>
 
-<h1>🎡 Chia bảng bằng vòng quay</h1>
-
 <div class="container">
-  <!-- Cột trái: vòng quay + điều khiển -->
-  <div class="panel">
-    <div class="wheel-wrap">
-      <div class="pointer"></div>
-      <canvas id="wheel" width="680" height="680"></canvas>
+  <h1>🎡 Chia bảng bằng vòng quay</h1>
+  <div class="sub">Quay để bốc từng đội vào bảng · chia đều số đội mỗi bảng · giao diện đồng bộ với trang giải đấu.</div>
+
+  <div class="layout">
+    <!-- Cột trái: vòng quay + điều khiển -->
+    <div class="card">
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <canvas id="wheel" width="680" height="680"></canvas>
+      </div>
+
+      <button class="btn" id="spinBtn">QUAY</button>
+      <div class="result" id="result">Nhấn QUAY để bốc đội</div>
+      <div class="remaining" id="remaining"></div>
+
+      <div class="row">
+        <label for="teamInput">Danh sách đội (mỗi dòng 1 đội)</label>
+        <textarea id="teamInput"></textarea>
+      </div>
+      <div class="row">
+        <label for="groupCount">Số bảng (tối đa 26)</label>
+        <input type="number" id="groupCount" min="1" max="26" value="2">
+      </div>
+      <button class="btn secondary" id="applyBtn">Áp dụng &amp; làm lại</button>
     </div>
 
-    <button class="btn" id="spinBtn">QUAY</button>
-    <div class="result" id="result">Nhấn QUAY để bốc đội</div>
-    <div class="remaining" id="remaining"></div>
-
-    <div class="row">
-      <label for="teamInput">Danh sách đội (mỗi dòng 1 đội)</label>
-      <textarea id="teamInput"></textarea>
+    <!-- Cột phải: các bảng -->
+    <div class="card">
+      <div class="groups" id="groups"></div>
     </div>
-    <div class="row">
-      <label for="groupCount">Số bảng (tối đa 26)</label>
-      <input type="number" id="groupCount" min="1" max="26" value="2">
-    </div>
-    <button class="btn secondary" id="applyBtn">Áp dụng &amp; làm lại</button>
-  </div>
-
-  <!-- Cột phải: các bảng -->
-  <div class="panel">
-    <div class="groups" id="groups"></div>
   </div>
 </div>
+
+<button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Chế độ tối/sáng">🌙</button>
 
 <script>
   const $ = id => document.getElementById(id);
@@ -157,11 +93,31 @@
   const R = canvas.width / 2;
   const TWO_PI = Math.PI * 2;
 
+  /* Bảng màu đồng bộ với index.html (đỏ, xanh, cam, lục, tím, lam) */
+  const PALETTE = ["#dc2626","#2563eb","#ea580c","#059669","#7c3aed","#0891b2"];
+  const GCOLOR  = {"A":"#2563eb","B":"#ea580c","C":"#059669","D":"#7c3aed","E":"#0891b2","F":"#dc2626"};
+
   let remaining = [];   // các đội còn trên vòng quay
   let groups = [];      // [{name, teams:[], cap}]
   let rotation = 0;     // góc hiện tại của vòng quay (radian)
   let spinning = false;
   let lastPlaced = null;
+
+  /* ---------- Dark mode (dùng chung key với index.html → bật ở trang nào cũng nhớ) ---------- */
+  function darkState(){try{return localStorage.getItem("bathon_dark")==="1"}catch(_){return false}}
+  function setDark(v){try{localStorage.setItem("bathon_dark",v?"1":"0")}catch(_){}}
+  function applyDarkState(){
+    const d=darkState();
+    document.body.classList.toggle("dark",d);
+    const bt=$("darkToggle");if(bt)bt.textContent=d?"☀️":"🌙";
+  }
+  function toggleDark(){
+    const d=!document.body.classList.contains("dark");
+    document.body.classList.toggle("dark",d);setDark(d);
+    const bt=$("darkToggle");if(bt)bt.textContent=d?"☀️":"🌙";
+    drawWheel();   // vẽ lại vòng quay theo nền mới
+  }
+  const isDark=()=>document.body.classList.contains("dark");
 
   // ---------- Khởi tạo ----------
   function init() {
@@ -197,14 +153,15 @@
   function drawWheel() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const n = remaining.length;
+    const bg = isDark() ? '#0f172a' : '#ffffff';
 
     if (n === 0) {
       ctx.beginPath();
       ctx.arc(R, R, R - 8, 0, TWO_PI);
-      ctx.fillStyle = '#334155';
+      ctx.fillStyle = isDark() ? '#334155' : '#e2e8f0';
       ctx.fill();
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 40px system-ui';
+      ctx.fillStyle = isDark() ? '#e2e8f0' : '#475467';
+      ctx.font = '900 44px "Be Vietnam Pro", system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('HẾT ĐỘI', R, R);
@@ -212,41 +169,50 @@
     }
 
     const seg = TWO_PI / n;
-    const fontSize = Math.max(10, Math.min(26, 360 / n));
+    const fontSize = Math.max(11, Math.min(28, 380 / n));
 
     for (let i = 0; i < n; i++) {
       const start = rotation + i * seg;
       const end = start + seg;
+      const col = PALETTE[i % PALETTE.length];
 
       ctx.beginPath();
       ctx.moveTo(R, R);
       ctx.arc(R, R, R - 8, start, end);
       ctx.closePath();
-      ctx.fillStyle = `hsl(${(i * 360 / n) % 360}, 70%, 52%)`;
+      ctx.fillStyle = col;
       ctx.fill();
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = bg;
+      ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Ghi tên đội theo hướng bán kính
+      // Ghi tên đội theo hướng bán kính (tự lật chữ để không bị ngược)
+      const mid = start + seg / 2;
+      const cm = Math.cos(mid);
+      // lật khi chữ sẽ bị ngược; đoạn thẳng đứng (cos≈0) thì lật nếu hướng lên
+      const flip = (cm < -1e-9) || (Math.abs(cm) <= 1e-9 && Math.sin(mid) < 0);
+      const maxW = R - 92;                     // không cho chữ tràn vào tâm
       ctx.save();
       ctx.translate(R, R);
-      ctx.rotate(start + seg / 2);
-      ctx.textAlign = 'right';
+      ctx.rotate(mid + (flip ? Math.PI : 0));
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
-      ctx.font = `bold ${fontSize}px system-ui`;
+      ctx.font = `800 ${fontSize}px "Be Vietnam Pro", system-ui, sans-serif`;
       let label = remaining[i];
       if (label.length > 18) label = label.slice(0, 17) + '…';
-      ctx.fillText(label, R - 26, 0);
+      if (flip) { ctx.textAlign = 'left';  ctx.fillText(label, -(R - 26), 0, maxW); }
+      else      { ctx.textAlign = 'right'; ctx.fillText(label,    R - 26 , 0, maxW); }
       ctx.restore();
     }
 
     // Tâm vòng quay
     ctx.beginPath();
-    ctx.arc(R, R, 18, 0, TWO_PI);
-    ctx.fillStyle = '#0f172a';
+    ctx.arc(R, R, 20, 0, TWO_PI);
+    ctx.fillStyle = bg;
     ctx.fill();
+    ctx.strokeStyle = isDark() ? '#334155' : '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 
   // ---------- Quay ----------
@@ -334,11 +300,27 @@
     const box = $('groups');
     box.innerHTML = '';
     groups.forEach(g => {
+      const col = GCOLOR[g.name] || PALETTE[0];
       const card = document.createElement('div');
       card.className = 'group';
+      card.style.borderLeftColor = col;
 
       const title = document.createElement('h3');
-      title.innerHTML = `Bảng ${g.name} <span>${g.teams.length}/${g.cap}</span>`;
+      const wrap = document.createElement('span');
+      wrap.className = 'gname';
+      const pre = document.createElement('span');
+      pre.className = 'gpre';
+      pre.textContent = 'Bảng';
+      const badge = document.createElement('span');
+      badge.style.background = col;
+      badge.style.color = '#fff';
+      badge.textContent = g.name;
+      wrap.appendChild(pre);
+      wrap.appendChild(badge);
+      const count = document.createElement('span');
+      count.textContent = `${g.teams.length}/${g.cap}`;
+      title.appendChild(wrap);
+      title.appendChild(count);
       card.appendChild(title);
 
       if (g.teams.length === 0) {
@@ -368,8 +350,9 @@
   $('spinBtn').addEventListener('click', spin);
   $('applyBtn').addEventListener('click', init);
 
-  // Dữ liệu mẫu: 24 đội
+  // Dữ liệu mẫu: 6 đội
   $('teamInput').value = Array.from({ length: 6 }, (_, i) => `Đội ${i + 1}`).join('\n');
+  applyDarkState();
   init();
 </script>
 </body>
